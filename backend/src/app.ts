@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import logger from './utils/logger';
 import { errorHandler, ApiError } from './middlewares/errorHandler';
 import { sendSuccess } from './utils/response';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 
@@ -14,11 +15,13 @@ const app = express();
 app.use(helmet());
 
 // Enable CORS
-app.use(cors({
-  origin: '*', // Customize this for production
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  cors({
+    origin: '*', // Customize this for production
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Compress all responses
 app.use(compression());
@@ -40,13 +43,16 @@ app.use(morgan(morganFormat, { stream: morganStream }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
   handler: (req: Request, res: Response, next: NextFunction) => {
     next(new ApiError('Too many requests, please try again later.', 429));
   },
 });
 app.use('/api/', limiter);
+
+// Register API Routes
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
