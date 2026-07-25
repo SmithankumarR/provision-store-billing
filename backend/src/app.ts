@@ -12,6 +12,7 @@ import categoryRoutes from './routes/categoryRoutes';
 import itemRoutes from './routes/itemRoutes';
 import customerRoutes from './routes/customerRoutes';
 import billRoutes from './routes/billRoutes';
+import reportRoutes from './routes/reportRoutes';
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/bills', billRoutes);
+app.use('/api', reportRoutes);
 app.use('/api', itemRoutes);
 
 // Health check endpoint
