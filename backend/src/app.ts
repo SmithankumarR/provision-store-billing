@@ -8,6 +8,7 @@ import logger from './utils/logger';
 import { errorHandler, ApiError } from './middlewares/errorHandler';
 import { sendSuccess } from './utils/response';
 import authRoutes from './routes/authRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/', limiter);
 
 // Register API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
