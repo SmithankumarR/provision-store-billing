@@ -10,6 +10,8 @@ import { sendSuccess } from './utils/response';
 import authRoutes from './routes/authRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import itemRoutes from './routes/itemRoutes';
+import customerRoutes from './routes/customerRoutes';
+import billRoutes from './routes/billRoutes';
 
 const app = express();
 
@@ -56,6 +58,8 @@ app.use('/api/', limiter);
 // Register API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/bills', billRoutes);
 app.use('/api', itemRoutes);
 
 // Health check endpoint
