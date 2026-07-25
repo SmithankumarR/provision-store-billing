@@ -4,6 +4,10 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import path from 'path';
+
 import logger from './utils/logger';
 import { errorHandler, ApiError } from './middlewares/errorHandler';
 import { sendSuccess } from './utils/response';
@@ -16,6 +20,9 @@ import reportRoutes from './routes/reportRoutes';
 import storeRoutes from './routes/storeRoutes';
 
 const app = express();
+
+// Load Swagger Specs
+const swaggerDocument = YAML.load(path.join(__dirname, 'swagger/swagger.yaml'));
 
 // Set security HTTP headers
 app.use(helmet());
@@ -57,6 +64,9 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Swagger Documentation Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Register API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -72,6 +82,7 @@ app.get('/api/health', (req: Request, res: Response) => {
     uptime: process.uptime(),
     timestamp: new Date(),
     env: process.env.NODE_ENV,
+    swaggerDocs: '/api-docs',
   });
 });
 

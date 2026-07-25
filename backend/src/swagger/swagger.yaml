@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  title: Provision Store Billing App API
+  description: Enterprise POS & Mobile Billing API for Provision & Grocery Shops.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5001/api
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Server Health Check
+      responses:
+        '200':
+          description: Server is healthy and operational
+
+  /auth/register-store:
+    post:
+      summary: Register Store & Owner Account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [storeName, storeAddress, storePhone, ownerName, ownerEmail, ownerPhone, password]
+              properties:
+                storeName: { type: string }
+                storeAddress: { type: string }
+                storePhone: { type: string }
+                gstNumber: { type: string }
+                ownerName: { type: string }
+                ownerEmail: { type: string }
+                ownerPhone: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Store and Owner registered successfully
+
+  /auth/login:
+    post:
+      summary: User Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: "Email or phone number" }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful with JWT tokens
+
+  /categories:
+    get:
+      summary: List Store Categories
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [all, active, inactive] }
+      responses:
+        '200':
+          description: List of categories
+    post:
+      summary: Create Category (Owner Only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+      responses:
+        '201':
+          description: Category created
+
+  /items:
+    get:
+      summary: Search and List Inventory Items
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: lowStock
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: List of items
+    post:
+      summary: Create Item (Owner Only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, categoryId, sellingPrice, costPrice, mrp, currentStock]
+              properties:
+                name: { type: string }
+                categoryId: { type: string }
+                sku: { type: string }
+                barcode: { type: string }
+                sellingPrice: { type: number }
+                costPrice: { type: number }
+                mrp: { type: number }
+                currentStock: { type: integer }
+                minimumStock: { type: integer }
+      responses:
+        '201':
+          description: Item created
+
+  /bills:
+    post:
+      summary: Create Sales Bill & Process Checkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, paymentMethod]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [itemId, quantity]
+                    properties:
+                      itemId: { type: string }
+                      quantity: { type: integer }
+                      discountPercentage: { type: number }
+                paymentMethod: { type: string, enum: [CASH, UPI, CARD, SPLIT] }
+                customerId: { type: string }
+      responses:
+        '201':
+          description: Bill created and stock deducted
+
+  /dashboard/summary:
+    get:
+      summary: Owner Dashboard Summary KPIs (Owner Only)
+      responses:
+        '200':
+          description: Dashboard metrics payload
+
+  /reports/sales:
+    get:
+      summary: Financial & Sales Analytics Report (Owner Only)
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string, enum: [today, yesterday, weekly, monthly, yearly, custom] }
+      responses:
+        '200':
+          description: Sales analytics report
