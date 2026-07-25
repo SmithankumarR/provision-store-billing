@@ -1,19 +1,23 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { PaperProvider } from 'react-native-paper';
+
+import { lightTheme, darkTheme } from './src/theme';
+import { useSettingsStore } from './src/store/useSettingsStore';
+import { AppNavigator } from './src/navigation/AppNavigator';
 
 export default function App() {
+  const { darkMode } = useSettingsStore();
+
+  const theme = darkMode ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.container}>
-      <Text>Provision Store Billing Mobile Client</Text>
-    </View>
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <StatusBar style={darkMode ? 'light' : 'dark'} />
+        <AppNavigator />
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
