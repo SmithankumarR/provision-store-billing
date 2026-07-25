@@ -13,61 +13,58 @@ import { UserRole } from '../models/User';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const router = Router();
 
-// Protect all routes with JWT authentication
 router.use(protect);
 
-// Item Lookup & Listing (Accessible by OWNER and BILLER)
-router.get('/items', listItemRules, itemController.getItems);
-router.get('/items/low-stock', itemController.getLowStockItems);
-router.get('/items/barcode/:barcode', itemController.getItemByBarcode);
-router.get('/items/sku/:sku', itemController.getItemBySku);
-router.get('/items/:id', itemIdRule, itemController.getItemById);
+// Item Lookup & Listing
+router.get('/', listItemRules, itemController.getItems);
+router.get('/low-stock', itemController.getLowStockItems);
+router.get('/barcode/:barcode', itemController.getItemByBarcode);
+router.get('/sku/:sku', itemController.getItemBySku);
+router.get('/export/csv', authorize(UserRole.OWNER), itemController.exportCsvItems);
+router.get('/:id', itemIdRule, itemController.getItemById);
 
-// CSV Export (OWNER only)
-router.get('/items/export/csv', authorize(UserRole.OWNER), itemController.exportCsvItems);
-
-// Item Mutations (OWNER only)
+// Item Mutations
 router.post(
-  '/items',
+  '/',
   authorize(UserRole.OWNER),
   createItemRules,
   itemController.createItem
 );
 
 router.put(
-  '/items/:id',
+  '/:id',
   authorize(UserRole.OWNER),
   updateItemRules,
   itemController.updateItem
 );
 
 router.patch(
-  '/items/:id/status',
+  '/:id/status',
   authorize(UserRole.OWNER),
   itemIdRule,
   itemController.toggleItemStatus
 );
 
 router.delete(
-  '/items/:id',
+  '/:id',
   authorize(UserRole.OWNER),
   itemIdRule,
   itemController.deleteItem
 );
 
 router.post(
-  '/items/import-csv',
+  '/import-csv',
   authorize(UserRole.OWNER),
   upload.single('file'),
   itemController.importCsvItems
 );
 
-// Inventory Operations
+// Inventory Stock Adjustments & Audit Logs
 router.post(
   '/inventory/adjust',
   authorize(UserRole.OWNER),

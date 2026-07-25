@@ -5,10 +5,10 @@ import { UserRole } from '../models/User';
 
 const router = Router();
 
-// Restrict all dashboard and report routes to OWNER role
+// Restrict all dashboard & report endpoints to OWNER
 router.use(protect, authorize(UserRole.OWNER));
 
-// Dashboard Analytics
+// Dashboard KPI Cards & Charts
 router.get('/dashboard/summary', reportController.getDashboardSummary);
 router.get('/dashboard/charts', reportController.getDashboardCharts);
 

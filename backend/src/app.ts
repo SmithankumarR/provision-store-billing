@@ -30,7 +30,7 @@ app.use(helmet());
 // Enable CORS
 app.use(
   cors({
-    origin: '*', // Customize this for production
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
@@ -54,8 +54,8 @@ app.use(morgan(morganFormat, { stream: morganStream }));
 
 // Apply rate limiting to all requests
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response, next: NextFunction) => {
@@ -64,19 +64,7 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Swagger Documentation Route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// Register API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/bills', billRoutes);
-app.use('/api', reportRoutes);
-app.use('/api', storeRoutes);
-app.use('/api', itemRoutes);
-
-// Health check endpoint
+// 1. PUBLIC ENDPOINTS (Health Check & Swagger Documentation)
 app.get('/api/health', (req: Request, res: Response) => {
   sendSuccess(res, 'Server is healthy', {
     uptime: process.uptime(),
@@ -85,6 +73,17 @@ app.get('/api/health', (req: Request, res: Response) => {
     swaggerDocs: '/api-docs',
   });
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// 2. FEATURE ROUTERS
+app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/bills', billRoutes);
+app.use('/api/store', storeRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api', reportRoutes);
 
 // Fallback for 404 - Route Not Found
 app.use((req: Request, res: Response, next: NextFunction) => {

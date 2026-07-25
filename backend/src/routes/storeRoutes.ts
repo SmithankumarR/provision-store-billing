@@ -5,14 +5,13 @@ import { UserRole } from '../models/User';
 
 const router = Router();
 
-// Protect all routes with JWT
 router.use(protect);
 
-// Store Profile Endpoints
-router.get('/store', storeController.getStoreProfile);
-router.put('/store', authorize(UserRole.OWNER), storeController.updateStoreProfile);
+// Store Profile
+router.get('/profile', storeController.getStoreProfile);
+router.put('/profile', authorize(UserRole.OWNER), storeController.updateStoreProfile);
 
-// App Settings Endpoints
+// App Preferences
 router.get('/settings', storeController.getAppSettings);
 router.put('/settings', storeController.updateAppSettings);
 
