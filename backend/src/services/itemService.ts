@@ -20,10 +20,21 @@ export const createItem = async (
   userId: string,
   data: Partial<IItem>
 ): Promise<IItem> => {
-  // Verify category belongs to the store
-  const category = await Category.findOne({ _id: data.categoryId, storeId });
-  if (!category) {
-    throw new ApiError('Invalid Category ID. Category does not exist in your store.', 400);
+  // Default Category handling: If categoryId not provided or invalid, fallback to default "General" category
+  let categoryId = data.categoryId;
+  if (categoryId) {
+    const category = await Category.findOne({ _id: categoryId, storeId });
+    if (!category) {
+      categoryId = undefined as any;
+    }
+  }
+
+  if (!categoryId) {
+    let generalCat = await Category.findOne({ storeId, name: 'General' });
+    if (!generalCat) {
+      generalCat = await Category.create({ name: 'General', storeId, isActive: true });
+    }
+    categoryId = generalCat._id as any;
   }
 
   // Auto-generate SKU if omitted
@@ -35,7 +46,7 @@ export const createItem = async (
   // Check unique SKU per store
   const existingSku = await Item.findOne({ storeId, sku });
   if (existingSku) {
-    throw new ApiError(`An item with SKU '${sku}' already exists in your store.`, 400);
+    sku = `SKU-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   }
 
   // Check unique barcode if provided
@@ -46,17 +57,22 @@ export const createItem = async (
     }
   }
 
+  const sellingPrice = data.sellingPrice || 0;
+  const costPrice = data.costPrice !== undefined ? data.costPrice : sellingPrice;
+  const mrp = data.mrp !== undefined ? data.mrp : sellingPrice;
+  const currentStock = data.currentStock !== undefined ? data.currentStock : 100;
+
   const item = new Item({
     name: data.name!.trim(),
-    categoryId: data.categoryId,
+    categoryId,
     sku,
     barcode: data.barcode ? data.barcode.trim() : '',
-    sellingPrice: data.sellingPrice,
-    costPrice: data.costPrice,
-    mrp: data.mrp,
+    sellingPrice,
+    costPrice,
+    mrp,
     discountPercentage: data.discountPercentage || 0,
     gstPercentage: data.gstPercentage || 0,
-    currentStock: data.currentStock || 0,
+    currentStock,
     minimumStock: data.minimumStock !== undefined ? data.minimumStock : 5,
     imageUrl: data.imageUrl || '',
     status: ItemStatus.ACTIVE,

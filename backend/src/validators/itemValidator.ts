@@ -4,12 +4,12 @@ import { InventoryLogType } from '../models/InventoryLog';
 
 export const createItemRules = [
   body('name').notEmpty().withMessage('Item name is required').trim(),
-  body('categoryId').isMongoId().withMessage('Valid Category ID is required'),
+  body('sellingPrice').isFloat({ min: 0 }).withMessage('Selling price must be a non-negative number'),
+  body('categoryId').optional().isMongoId().withMessage('Valid Category ID is required'),
   body('sku').optional().trim().toUpperCase(),
   body('barcode').optional().trim(),
-  body('sellingPrice').isFloat({ min: 0 }).withMessage('Selling price must be a non-negative number'),
-  body('costPrice').isFloat({ min: 0 }).withMessage('Cost price must be a non-negative number'),
-  body('mrp').isFloat({ min: 0 }).withMessage('MRP must be a non-negative number'),
+  body('costPrice').optional().isFloat({ min: 0 }).withMessage('Cost price must be a non-negative number'),
+  body('mrp').optional().isFloat({ min: 0 }).withMessage('MRP must be a non-negative number'),
   body('discountPercentage')
     .optional()
     .isFloat({ min: 0, max: 100 })
@@ -18,7 +18,7 @@ export const createItemRules = [
     .optional()
     .isFloat({ min: 0, max: 100 })
     .withMessage('GST percentage must be between 0 and 100'),
-  body('currentStock').isInt({ min: 0 }).withMessage('Current stock must be a non-negative integer'),
+  body('currentStock').optional().isInt({ min: 0 }).withMessage('Current stock must be a non-negative integer'),
   body('minimumStock')
     .optional()
     .isInt({ min: 0 })
