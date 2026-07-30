@@ -62,12 +62,20 @@ export const CategoriesScreen = () => {
         renderItem={({ item }) => (
           <Surface style={styles.card} elevation={1}>
             <View style={{ flex: 1 }}>
-              <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
-              {item.description ? <Text variant="bodySmall" style={{ color: theme.colors.outline }}>{item.description}</Text> : null}
+              <View style={styles.row}>
+                <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{item.name}</Text>
+
+                {/* High Contrast Status Badge */}
+                <View style={[styles.statusBadge, item.isActive ? styles.activeBadge : styles.inactiveBadge]}>
+                  <Text style={[styles.statusText, item.isActive ? styles.activeText : styles.inactiveText]}>
+                    {item.isActive ? '🟢 Active' : '🔴 Inactive'}
+                  </Text>
+                </View>
+              </View>
+              {item.description ? <Text variant="bodySmall" style={{ color: theme.colors.outline, marginTop: 4 }}>{item.description}</Text> : null}
             </View>
             <IconButton
-              icon={item.isActive ? 'check-circle' : 'minus-circle-outline'}
-              iconColor={item.isActive ? theme.colors.primary : theme.colors.error}
+              icon={item.isActive ? 'eye' : 'eye-off'}
               onPress={() => handleToggleStatus(item._id)}
             />
           </Surface>
@@ -102,6 +110,28 @@ export const CategoriesScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   card: { padding: 16, borderRadius: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  activeBadge: {
+    backgroundColor: '#dcfce7',
+  },
+  inactiveBadge: {
+    backgroundColor: '#fee2e2',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  activeText: {
+    color: '#15803d',
+  },
+  inactiveText: {
+    color: '#b91c1c',
+  },
   fab: { position: 'absolute', right: 16, bottom: 16 },
   modal: { padding: 20, margin: 20, borderRadius: 16 },
 });
