@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
@@ -13,11 +14,19 @@ export default function App() {
   const theme = darkMode ? darkTheme : lightTheme;
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={styles.container}>
       <PaperProvider theme={theme}>
-        <StatusBar style={darkMode ? 'light' : 'dark'} />
-        <AppNavigator />
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+          <StatusBar style={darkMode ? 'light' : 'dark'} />
+          <AppNavigator />
+        </View>
       </PaperProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
