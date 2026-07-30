@@ -15,6 +15,7 @@ import {
   useTheme,
   Surface,
   Divider,
+  Snackbar,
 } from 'react-native-paper';
 import { useCartStore } from '../store/useCartStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -47,6 +48,15 @@ export const BillingScreen = () => {
   // Checkout Success Receipt Modal
   const [completedBill, setCompletedBill] = useState<Bill | null>(null);
   const [isReceiptVisible, setIsReceiptVisible] = useState(false);
+
+  // Toast System
+  const [toastMessage, setToastMessage] = useState('');
+  const [isToastVisible, setIsToastVisible] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setIsToastVisible(true);
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -88,14 +98,20 @@ export const BillingScreen = () => {
     fetchItems(text);
   };
 
+  const handleAddToCart = (item: Item) => {
+    cart.addItem(item);
+    showToast(`Added ${item.name} to cart`);
+  };
+
   const handleBarcodeSearch = async (barcodeText: string) => {
     try {
       const res = await api.get(`/items/barcode/${barcodeText.trim()}`);
       if (res.data.success && res.data.data) {
         cart.addItem(res.data.data);
+        showToast(`Barcode Scanned: Added ${res.data.data.name}`);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Barcode not found');
+      showToast(err.response?.data?.message || 'Barcode item not found');
     }
   };
 
@@ -107,6 +123,7 @@ export const BillingScreen = () => {
       if (res.data.success) {
         setFoundCustomer(res.data.data);
         cart.setCustomer(res.data.data);
+        showToast(`Customer assigned: ${res.data.data.name}`);
       }
     } catch (err: any) {
       setCustomerError('Customer not found with this phone number.');
@@ -116,6 +133,7 @@ export const BillingScreen = () => {
   const handleApplyBillDiscount = () => {
     const val = parseFloat(discountValueInput) || 0;
     cart.setBillDiscount(val > 0 ? discountTypeInput : null, val);
+    showToast(`Applied ${val} ${discountTypeInput === 'FLAT' ? '₹' : '%'} discount`);
   };
 
   const handleCheckout = async () => {
@@ -124,8 +142,9 @@ export const BillingScreen = () => {
       setCompletedBill(bill);
       setIsCartVisible(false);
       setIsReceiptVisible(true);
+      showToast(`Bill #${bill.invoiceNumber} Completed Successfully!`);
     } catch (err: any) {
-      alert(err.message || 'Checkout failed.');
+      showToast(err.message || 'Checkout failed.');
     }
   };
 
@@ -227,7 +246,7 @@ export const BillingScreen = () => {
                     mode="contained-tonal"
                     compact
                     disabled={isOut}
-                    onPress={() => cart.addItem(item)}
+                    onPress={() => handleAddToCart(item)}
                     style={{ marginTop: 8 }}
                   >
                     {isOut ? 'Out of Stock' : '+ Add'}
@@ -459,6 +478,16 @@ export const BillingScreen = () => {
           store={store}
         />
       ) : null}
+
+      {/* Toast Notification Bar */}
+      <Snackbar
+        visible={isToastVisible}
+        onDismiss={() => setIsToastVisible(false)}
+        duration={2500}
+        style={{ backgroundColor: theme.colors.surfaceVariant }}
+      >
+        <Text style={{ color: theme.colors.onSurface }}>{toastMessage}</Text>
+      </Snackbar>
     </View>
   );
 };
