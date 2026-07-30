@@ -22,6 +22,7 @@ interface CartState {
   isSubmitting: boolean;
 
   addItem: (item: Item, quantity?: number) => void;
+  addCustomItem: (name: string, price: number, quantity?: number) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   setItemDiscount: (itemId: string, discountPercentage: number) => void;
@@ -70,6 +71,25 @@ export const useCartStore = create<CartState>((set, get) => ({
         set({ items: [...items, newItem] });
       }
     }
+  },
+
+  addCustomItem: (name: string, price: number, quantity = 1) => {
+    const customId = `custom-${Date.now()}`;
+    const customItem: Item = {
+      _id: customId,
+      name: name.trim() || 'Custom Item',
+      categoryId: 'general',
+      sku: `CUSTOM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      sellingPrice: price,
+      costPrice: price,
+      mrp: price,
+      discountPercentage: 0,
+      gstPercentage: 0,
+      currentStock: 9999,
+      minimumStock: 0,
+      status: 'ACTIVE',
+    };
+    get().addItem(customItem, quantity);
   },
 
   removeItem: (itemId: string) => {
@@ -179,12 +199,29 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ isSubmitting: true });
 
     try {
-      const payload = {
-        items: items.map((i) => ({
-          itemId: i.item._id,
+      // Resolve custom unlisted items to real DB records before checkout
+      const finalBillItems = [];
+      for (const i of items) {
+        let itemId = i.item._id;
+        if (itemId.startsWith('custom-')) {
+          const res = await api.post('/items', {
+            name: i.item.name,
+            sellingPrice: i.item.sellingPrice,
+            currentStock: 9999,
+          });
+          if (res.data.success && res.data.data) {
+            itemId = res.data.data._id;
+          }
+        }
+        finalBillItems.push({
+          itemId,
           quantity: i.quantity,
           discountPercentage: i.discountPercentage,
-        })),
+        });
+      }
+
+      const payload = {
+        items: finalBillItems,
         paymentMethod,
         splitDetails: paymentMethod === PaymentMethod.SPLIT ? splitDetails : undefined,
         billDiscountType: billDiscountType || undefined,

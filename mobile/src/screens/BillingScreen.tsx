@@ -34,6 +34,12 @@ export const BillingScreen = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
 
+  // Quick Manual Custom Item Modal
+  const [isCustomItemModalVisible, setIsCustomItemModalVisible] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customPrice, setCustomPrice] = useState('');
+  const [customQty, setCustomQty] = useState('1');
+
   // Cart & Customer Modals
   const [isCartVisible, setIsCartVisible] = useState(false);
   const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
@@ -103,6 +109,26 @@ export const BillingScreen = () => {
     showToast(`Added ${item.name} to cart`);
   };
 
+  const handleAddCustomItem = () => {
+    if (!customName.trim()) {
+      showToast('Please enter item name');
+      return;
+    }
+    const price = parseFloat(customPrice);
+    if (isNaN(price) || price <= 0) {
+      showToast('Please enter valid price');
+      return;
+    }
+    const qty = parseInt(customQty, 10) || 1;
+
+    cart.addCustomItem(customName, price, qty);
+    showToast(`Added ${customName} (₹${price}) to cart`);
+    setCustomName('');
+    setCustomPrice('');
+    setCustomQty('1');
+    setIsCustomItemModalVisible(false);
+  };
+
   const handleBarcodeSearch = async (barcodeText: string) => {
     try {
       const res = await api.get(`/items/barcode/${barcodeText.trim()}`);
@@ -153,23 +179,22 @@ export const BillingScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Header Search & Barcode Trigger */}
+      {/* Header Search & Manual Custom Item Button */}
       <View style={styles.searchHeader}>
         <Searchbar
-          placeholder="Search Item name, SKU, or Barcode..."
+          placeholder="Search items..."
           value={searchQuery}
           onChangeText={handleSearch}
           style={styles.searchBar}
         />
-        <IconButton
-          icon="barcode-scan"
-          mode="contained"
-          size={26}
-          onPress={() => {
-            const code = prompt('Enter or scan barcode:');
-            if (code) handleBarcodeSearch(code);
-          }}
-        />
+        <Button
+          mode="contained-tonal"
+          icon="plus-box"
+          onPress={() => setIsCustomItemModalVisible(true)}
+          style={{ height: 48, justifyContent: 'center' }}
+        >
+          ⚡ Custom
+        </Button>
       </View>
 
       {/* Category Pills Slider */}
@@ -212,17 +237,12 @@ export const BillingScreen = () => {
                   {item.name}
                 </Text>
                 <Text variant="bodySmall" style={{ color: theme.colors.outline }}>
-                  Stock: {item.currentStock} {item.currentStock <= item.minimumStock ? '⚠️' : ''}
+                  Stock: {item.currentStock}
                 </Text>
                 <View style={styles.priceRow}>
                   <Text variant="titleLarge" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
                     ₹{item.sellingPrice}
                   </Text>
-                  {item.mrp > item.sellingPrice ? (
-                    <Text variant="bodySmall" style={{ textDecorationLine: 'line-through', color: '#888' }}>
-                      ₹{item.mrp}
-                    </Text>
-                  ) : null}
                 </View>
 
                 {inCart ? (
@@ -275,6 +295,51 @@ export const BillingScreen = () => {
           </Button>
         </Surface>
       ) : null}
+
+      {/* Quick Manual Custom Item Modal */}
+      <Portal>
+        <Modal
+          visible={isCustomItemModalVisible}
+          onDismiss={() => setIsCustomItemModalVisible(false)}
+          contentContainerStyle={[styles.modal, { backgroundColor: theme.colors.background }]}
+        >
+          <Text variant="titleMedium" style={{ fontWeight: 'bold', marginBottom: 12 }}>
+            ⚡ Add Custom / Unlisted Line Item
+          </Text>
+
+          <TextInput
+            label="Item Name *"
+            value={customName}
+            onChangeText={setCustomName}
+            mode="outlined"
+            placeholder="e.g. Loose Sugar 1kg, Grocery Pack"
+            style={{ marginBottom: 12 }}
+          />
+
+          <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+            <TextInput
+              label="Price (₹) *"
+              value={customPrice}
+              onChangeText={setCustomPrice}
+              mode="outlined"
+              keyboardType="numeric"
+              style={{ flex: 1, marginRight: 6 }}
+            />
+            <TextInput
+              label="Qty"
+              value={customQty}
+              onChangeText={setCustomQty}
+              mode="outlined"
+              keyboardType="numeric"
+              style={{ width: 80, marginLeft: 6 }}
+            />
+          </View>
+
+          <Button mode="contained" onPress={handleAddCustomItem}>
+            Add Custom Item to Bill
+          </Button>
+        </Modal>
+      </Portal>
 
       {/* Cart Modal Drawer */}
       <Portal>
@@ -495,7 +560,7 @@ export const BillingScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   searchHeader: { flexDirection: 'row', padding: 8, alignItems: 'center' },
-  searchBar: { flex: 1, marginRight: 4, height: 48 },
+  searchBar: { flex: 1, marginRight: 8, height: 48 },
   categoryBar: { marginBottom: 8 },
   chip: { marginRight: 8 },
   itemCard: { flex: 1, margin: 4, borderRadius: 12 },
@@ -507,7 +572,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justify.content: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -521,4 +586,5 @@ const styles = StyleSheet.create({
   totalsCard: { padding: 16, borderRadius: 12, marginTop: 8 },
   totalLine: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 2 },
   customerModal: { padding: 20, margin: 20, borderRadius: 12 },
+  modal: { padding: 20, margin: 20, borderRadius: 16 },
 });
