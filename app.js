@@ -1,0 +1,374 @@
+/**
+ * Provision Store Simple Web POS & Billing System
+ * Single-file Vanilla JavaScript Application
+ */
+
+// Initial Default Catalog Items
+const DEFAULT_CATALOG = [
+  { id: '1', name: 'Basmati Rice 5kg', price: 450 },
+  { id: '2', name: 'Fresh Milk 1L', price: 60 },
+  { id: '3', name: 'Cashew Nuts 250g', price: 220 },
+  { id: '4', name: 'Tata Salt 1kg', price: 28 },
+  { id: '5', name: 'Refined Oil 1L', price: 145 },
+  { id: '6', name: 'Sugar 1kg', price: 44 },
+];
+
+const DEFAULT_STORE = {
+  name: 'Sri Lakshmi Provision Store',
+  address: '45 Market Road, Electronic City, Bengaluru',
+  phone: '9876543210',
+  footerMsg: 'Thank you for shopping with us! Visit again.',
+};
+
+// Application State
+let storeConfig = JSON.parse(localStorage.getItem('storeConfig')) || DEFAULT_STORE;
+let catalog = JSON.parse(localStorage.getItem('catalogItems')) || DEFAULT_CATALOG;
+let cart = []; // [{ item, quantity }]
+
+// DOM Elements
+const navStoreName = document.getElementById('navStoreName');
+const navStoreAddress = document.getElementById('navStoreAddress');
+const quickAddForm = document.getElementById('quickAddForm');
+const itemNameInput = document.getElementById('itemName');
+const itemPriceInput = document.getElementById('itemPrice');
+const searchCatalog = document.getElementById('searchCatalog');
+const productGrid = document.getElementById('productGrid');
+const cartItemsList = document.getElementById('cartItemsList');
+const txtSubtotal = document.getElementById('txtSubtotal');
+const discountInput = document.getElementById('discountInput');
+const txtGrandTotal = document.getElementById('txtGrandTotal');
+const btnClearCart = document.getElementById('btnClearCart');
+const btnCheckout = document.getElementById('btnCheckout');
+const custNameInput = document.getElementById('custName');
+const custPhoneInput = document.getElementById('custPhone');
+
+// Receipt Modal
+const receiptModal = document.getElementById('receiptModal');
+const paperReceipt = document.getElementById('paperReceipt');
+const btnCloseReceipt = document.getElementById('btnCloseReceipt');
+const btnCloseReceiptFooter = document.getElementById('btnCloseReceiptFooter');
+const btnPrintReceipt = document.getElementById('btnPrintReceipt');
+
+// Settings Modal
+const settingsModal = document.getElementById('settingsModal');
+const btnOpenSettings = document.getElementById('btnOpenSettings');
+const btnCloseSettings = document.getElementById('btnCloseSettings');
+const btnCancelSettings = document.getElementById('btnCancelSettings');
+const settingsForm = document.getElementById('settingsForm');
+const cfgStoreName = document.getElementById('cfgStoreName');
+const cfgStoreAddress = document.getElementById('cfgStoreAddress');
+const cfgStorePhone = document.getElementById('cfgStorePhone');
+const cfgFooterMsg = document.getElementById('cfgFooterMsg');
+
+// Toast Container
+const toastContainer = document.getElementById('toastContainer');
+
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  renderStoreHeader();
+  renderCatalog();
+  renderCart();
+
+  // Event Listeners
+  quickAddForm.addEventListener('submit', handleQuickAdd);
+  searchCatalog.addEventListener('input', (e) => renderCatalog(e.target.value));
+  discountInput.addEventListener('input', updateCartTotals);
+  btnClearCart.addEventListener('click', clearCart);
+  btnCheckout.addEventListener('click', handleCheckout);
+
+  // Settings Modal Events
+  btnOpenSettings.addEventListener('click', openSettingsModal);
+  btnCloseSettings.addEventListener('click', closeSettingsModal);
+  btnCancelSettings.addEventListener('click', closeSettingsModal);
+  settingsForm.addEventListener('submit', handleSaveSettings);
+
+  // Receipt Modal Events
+  btnCloseReceipt.addEventListener('click', closeReceiptModal);
+  btnCloseReceiptFooter.addEventListener('click', closeReceiptModal);
+  btnPrintReceipt.addEventListener('click', printReceipt);
+});
+
+// Toast Helper
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = msg;
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2500);
+}
+
+// Store Header Rendering
+function renderStoreHeader() {
+  navStoreName.innerText = storeConfig.name;
+  navStoreAddress.innerText = `${storeConfig.address} • Ph: ${storeConfig.phone}`;
+}
+
+// Catalog Rendering
+function renderCatalog(searchFilter = '') {
+  productGrid.innerHTML = '';
+
+  const filterText = searchFilter.toLowerCase().trim();
+  const filteredItems = catalog.filter((item) =>
+    item.name.toLowerCase().includes(filterText)
+  );
+
+  if (filteredItems.length === 0) {
+    productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 20px;">No products found.</p>`;
+    return;
+  }
+
+  filteredItems.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="product-title">${escapeHtml(item.name)}</div>
+      <div class="product-price-row">
+        <span class="product-price">₹${item.price.toFixed(2)}</span>
+        <button class="btn-add-item">+ Add</button>
+      </div>
+    `;
+
+    card.addEventListener('click', () => addToCart(item));
+    productGrid.appendChild(card);
+  });
+}
+
+// Handle Quick Add Product
+function handleQuickAdd(e) {
+  e.preventDefault();
+
+  const name = itemNameInput.value.trim();
+  const price = parseFloat(itemPriceInput.value);
+
+  if (!name || isNaN(price) || price <= 0) {
+    showToast('Please enter valid product name and price.');
+    return;
+  }
+
+  const newItem = {
+    id: 'item_' + Date.now(),
+    name,
+    price,
+  };
+
+  catalog.unshift(newItem);
+  localStorage.setItem('catalogItems', JSON.stringify(catalog));
+
+  // Automatically add to cart as well for speed
+  addToCart(newItem);
+
+  // Reset form
+  itemNameInput.value = '';
+  itemPriceInput.value = '';
+  renderCatalog();
+  showToast(`Added "${name}" to catalog & cart!`);
+}
+
+// Cart Operations
+function addToCart(item) {
+  const existing = cart.find((c) => c.item.id === item.id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ item, quantity: 1 });
+  }
+  renderCart();
+  showToast(`Added ${item.name}`);
+}
+
+function updateQty(itemId, change) {
+  const index = cart.findIndex((c) => c.item.id === itemId);
+  if (index > -1) {
+    cart[index].quantity += change;
+    if (cart[index].quantity <= 0) {
+      cart.splice(index, 1);
+    }
+  }
+  renderCart();
+}
+
+function removeFromCart(itemId) {
+  cart = cart.filter((c) => c.item.id !== itemId);
+  renderCart();
+}
+
+function clearCart() {
+  cart = [];
+  renderCart();
+  showToast('Cart cleared.');
+}
+
+// Render Cart List & Totals
+function renderCart() {
+  cartItemsList.innerHTML = '';
+
+  if (cart.length === 0) {
+    cartItemsList.innerHTML = `<p style="text-align: center; color: #64748b; padding: 40px 0;">Cart is empty. Tap items on the left to add.</p>`;
+    txtSubtotal.innerText = '₹0.00';
+    txtGrandTotal.innerText = '₹0';
+    return;
+  }
+
+  cart.forEach(({ item, quantity }) => {
+    const row = document.createElement('div');
+    row.className = 'cart-item-row';
+    const itemTotal = item.price * quantity;
+
+    row.innerHTML = `
+      <div class="cart-item-info">
+        <div class="cart-item-name">${escapeHtml(item.name)}</div>
+        <div class="cart-item-price">₹${item.price.toFixed(2)} × ${quantity} = ₹${itemTotal.toFixed(2)}</div>
+      </div>
+      <div class="stepper">
+        <button class="btn-step btn-minus">-</button>
+        <span class="qty-val">${quantity}</span>
+        <button class="btn-step btn-plus">+</button>
+        <button class="btn-remove">&times;</button>
+      </div>
+    `;
+
+    row.querySelector('.btn-minus').addEventListener('click', () => updateQty(item.id, -1));
+    row.querySelector('.btn-plus').addEventListener('click', () => updateQty(item.id, 1));
+    row.querySelector('.btn-remove').addEventListener('click', () => removeFromCart(item.id));
+
+    cartItemsList.appendChild(row);
+  });
+
+  updateCartTotals();
+}
+
+function updateCartTotals() {
+  let subtotal = 0;
+  cart.forEach(({ item, quantity }) => {
+    subtotal += item.price * quantity;
+  });
+
+  const discount = Math.max(0, parseFloat(discountInput.value) || 0);
+  const grandTotal = Math.max(0, Math.round(subtotal - discount));
+
+  txtSubtotal.innerText = `₹${subtotal.toFixed(2)}`;
+  txtGrandTotal.innerText = `₹${grandTotal}`;
+}
+
+// Checkout & Receipt Generation
+function handleCheckout() {
+  if (cart.length === 0) {
+    showToast('Cart is empty! Add items before checkout.');
+    return;
+  }
+
+  const invoiceNum = 'INV-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+  const dateStr = new Date().toLocaleString();
+  const custName = custNameInput.value.trim() || 'Walk-in Customer';
+  const custPhone = custPhoneInput.value.trim();
+  const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+
+  let subtotal = 0;
+  cart.forEach(({ item, quantity }) => {
+    subtotal += item.price * quantity;
+  });
+  const discount = Math.max(0, parseFloat(discountInput.value) || 0);
+  const grandTotal = Math.max(0, Math.round(subtotal - discount));
+
+  // Build Monospace Thermal Paper Receipt Layout
+  let receiptText = `${storeConfig.name.toUpperCase()}
+${storeConfig.address}
+Ph: ${storeConfig.phone}
+----------------------------------------
+Invoice #: ${invoiceNum}
+Date: ${dateStr}
+Customer: ${custName}${custPhone ? ' (' + custPhone + ')' : ''}
+Payment Mode: ${paymentMode}
+----------------------------------------
+ITEM NAME           QTY   PRICE   TOTAL
+----------------------------------------
+`;
+
+  cart.forEach(({ item, quantity }) => {
+    const lineTotal = (item.price * quantity).toFixed(2);
+    const paddedName = padString(item.name, 18);
+    const paddedQty = padString(String(quantity), 5);
+    const paddedPrice = padString(item.price.toFixed(2), 7);
+
+    receiptText += `${paddedName} ${paddedQty} ${paddedPrice} ${lineTotal}\n`;
+  });
+
+  receiptText += `----------------------------------------
+Subtotal:                    ₹${subtotal.toFixed(2)}
+`;
+  if (discount > 0) {
+    receiptText += `Discount:                   -₹${discount.toFixed(2)}\n`;
+  }
+  receiptText += `========================================
+GRAND TOTAL:                 ₹${grandTotal}
+========================================
+
+${storeConfig.footerMsg || 'Thank you for your visit!'}`;
+
+  paperReceipt.innerText = receiptText;
+  receiptModal.classList.remove('hidden');
+}
+
+function printReceipt() {
+  window.print();
+}
+
+function closeReceiptModal() {
+  receiptModal.classList.add('hidden');
+  clearCart();
+  custNameInput.value = '';
+  custPhoneInput.value = '';
+  discountInput.value = '0';
+}
+
+// Settings Modal Handler
+function openSettingsModal() {
+  cfgStoreName.value = storeConfig.name;
+  cfgStoreAddress.value = storeConfig.address;
+  cfgStorePhone.value = storeConfig.phone;
+  cfgFooterMsg.value = storeConfig.footerMsg || '';
+  settingsModal.classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  settingsModal.classList.add('hidden');
+}
+
+function handleSaveSettings(e) {
+  e.preventDefault();
+  storeConfig = {
+    name: cfgStoreName.value.trim(),
+    address: cfgStoreAddress.value.trim(),
+    phone: cfgStorePhone.value.trim(),
+    footerMsg: cfgFooterMsg.value.trim(),
+  };
+
+  localStorage.setItem('storeConfig', JSON.stringify(storeConfig));
+  renderStoreHeader();
+  closeSettingsModal();
+  showToast('Store settings saved successfully!');
+}
+
+// String Padding Utility for Receipt Table Alignment
+function padString(str, length) {
+  if (str.length > length) {
+    return str.substring(0, length - 2) + '..';
+  }
+  return str.padEnd(length, ' ');
+}
+
+// Escape HTML Utility
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, function (m) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[m];
+  });
+}

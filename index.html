@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Provision Store - Simple POS & Billing</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Main Top Navbar -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="brand-icon">🛒</div>
+        <div>
+          <h1 id="navStoreName">Sri Lakshmi Provisions</h1>
+          <p id="navStoreAddress">Market Road, Bengaluru • Ph: 9876543210</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Store Settings</button>
+      </div>
+    </header>
+
+    <!-- Main 2-Column POS Billing Layout -->
+    <main class="pos-layout">
+      <!-- Left Column: Product Catalog & Quick Add -->
+      <section class="catalog-section">
+        <!-- Quick Add Form -->
+        <div class="card quick-add-card">
+          <div class="card-header">
+            <h3>⚡ Quick Add Item</h3>
+            <span class="badge badge-emerald">Minimal Entry</span>
+          </div>
+          <form id="quickAddForm" class="quick-add-form">
+            <div class="form-group">
+              <label for="itemName">Item Name *</label>
+              <input type="text" id="itemName" placeholder="e.g. Basmati Rice 5kg, Milk 1L" required autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label for="itemPrice">Price (₹) *</label>
+              <input type="number" id="itemPrice" placeholder="e.g. 450" min="0" step="any" required autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary">+ Add Item to Catalog</button>
+          </form>
+        </div>
+
+        <!-- Product Catalog Search & Grid -->
+        <div class="card catalog-card">
+          <div class="catalog-header">
+            <h3>📦 Product Catalog</h3>
+            <input type="text" id="searchCatalog" placeholder="🔍 Search items by name..." class="search-input" />
+          </div>
+          <div id="productGrid" class="product-grid">
+            <!-- Product cards injected by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Cart & Billing Summary -->
+      <section class="cart-section">
+        <div class="card cart-card">
+          <div class="cart-header">
+            <h3>🛒 Billing Cart</h3>
+            <button class="btn btn-text btn-sm" id="btnClearCart">Clear Cart</button>
+          </div>
+
+          <!-- Customer Optional Info -->
+          <div class="customer-row">
+            <input type="text" id="custName" placeholder="Customer Name (Optional)" class="input-sm" />
+            <input type="tel" id="custPhone" placeholder="Phone Number (Optional)" class="input-sm" />
+          </div>
+
+          <!-- Cart Items List -->
+          <div id="cartItemsList" class="cart-items-list">
+            <!-- Cart items injected by JS -->
+          </div>
+
+          <!-- Totals Breakdown -->
+          <div class="cart-totals">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span id="txtSubtotal">₹0.00</span>
+            </div>
+            <div class="total-row">
+              <label for="discountInput">Discount (₹):</label>
+              <input type="number" id="discountInput" value="0" min="0" class="input-xs" />
+            </div>
+            <div class="total-row grand-total-row">
+              <span>GRAND TOTAL:</span>
+              <span id="txtGrandTotal" class="grand-total-val">₹0</span>
+            </div>
+          </div>
+
+          <!-- Payment Method Selector -->
+          <div class="payment-selector">
+            <label>Payment Mode:</label>
+            <div class="payment-options">
+              <label class="payment-opt">
+                <input type="radio" name="paymentMode" value="CASH" checked />
+                <span>Cash</span>
+              </label>
+              <label class="payment-opt">
+                <input type="radio" name="paymentMode" value="UPI" />
+                <span>UPI / QR</span>
+              </label>
+              <label class="payment-opt">
+                <input type="radio" name="paymentMode" value="CARD" />
+                <span>Card</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Checkout Button -->
+          <button class="btn btn-success btn-block btn-lg" id="btnCheckout">
+            🖨️ Complete Checkout & Print Bill
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal 1: Thermal Receipt Preview Modal -->
+    <div id="receiptModal" class="modal-overlay hidden">
+      <div class="modal-card receipt-modal-card">
+        <div class="modal-header">
+          <h2>📄 Invoice Receipt Preview</h2>
+          <button class="modal-close" id="btnCloseReceipt">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Paper Thermal Receipt Container -->
+          <div id="paperReceipt" class="paper-receipt">
+            <!-- Formatted receipt content injected by JS -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnCloseReceiptFooter">Close</button>
+          <button class="btn btn-primary btn-lg" id="btnPrintReceipt">🖨️ Print Receipt</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Store Settings Modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>⚙️ Store Header Settings</h2>
+          <button class="modal-close" id="btnCloseSettings">&times;</button>
+        </div>
+
+        <form id="settingsForm" class="modal-body">
+          <div class="form-group">
+            <label for="cfgStoreName">Store Name *</label>
+            <input type="text" id="cfgStoreName" required />
+          </div>
+          <div class="form-group">
+            <label for="cfgStoreAddress">Address *</label>
+            <input type="text" id="cfgStoreAddress" required />
+          </div>
+          <div class="form-group">
+            <label for="cfgStorePhone">Phone Number *</label>
+            <input type="text" id="cfgStorePhone" required />
+          </div>
+          <div class="form-group">
+            <label for="cfgFooterMsg">Receipt Footer Message</label>
+            <input type="text" id="cfgFooterMsg" placeholder="Thank you for shopping with us!" />
+          </div>
+
+          <div class="modal-footer" style="padding-top: 16px;">
+            <button type="button" class="btn btn-secondary" id="btnCancelSettings">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
