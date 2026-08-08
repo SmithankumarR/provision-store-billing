@@ -11,139 +11,179 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Main Top Navbar -->
-    <header class="navbar">
-      <div class="brand">
-        <div class="brand-icon">🛒</div>
-        <div>
-          <h1 id="navStoreName">Sri Lakshmi Provision Store</h1>
-          <p id="navStoreAddress">Electronic City, Bengaluru • Ph: 9876543210</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Edit Store Header</button>
-      </div>
-    </header>
-
-    <!-- Main 2-Column POS Billing Layout -->
-    <main class="pos-layout">
-      <!-- Left Column: Store Setup, Product Catalog & Quick Add -->
-      <section class="catalog-section">
-        
-        <!-- Editable Store Header Bar -->
-        <div class="card store-setup-card">
-          <div class="card-header">
-            <h3>🏪 Your Editable Store Name & Header</h3>
-            <span class="badge badge-emerald">Printed on Receipts</span>
-          </div>
-          <div class="store-setup-form">
-            <div class="form-group">
-              <label for="inlineStoreName">Store Name (Editable) *</label>
-              <input type="text" id="inlineStoreName" placeholder="e.g. Sri Lakshmi Provision Store" />
-            </div>
-            <div class="form-group">
-              <label for="inlineSubTitle">Subtitle / Tagline (Optional)</label>
-              <input type="text" id="inlineSubTitle" placeholder="e.g. General & Provisions" />
-            </div>
-            <div class="form-group">
-              <label for="inlineAddress">Store Address & Phone *</label>
-              <input type="text" id="inlineAddress" placeholder="e.g. Market Road, Bengaluru - Ph: 9876543210" />
-            </div>
-          </div>
+    
+    <!-- Screen 1: Auth / Login Overlay -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <div class="auth-logo">🛒</div>
+          <h2>Provision Store POS Portal</h2>
+          <p>Sign in to your store billing counter</p>
         </div>
 
-        <!-- Quick Add Form -->
-        <div class="card quick-add-card">
-          <div class="card-header">
-            <h3>⚡ Quick Add Item</h3>
-            <span class="badge badge-emerald">Minimal Entry</span>
+        <form id="authForm" class="auth-form">
+          <div class="form-group">
+            <label for="authEmail">Email or Phone Number *</label>
+            <input type="text" id="authEmail" value="owner@store.com" required autocomplete="username" />
           </div>
-          <form id="quickAddForm" class="quick-add-form">
-            <div class="form-group">
-              <label for="itemName">Item Name *</label>
-              <input type="text" id="itemName" placeholder="e.g. Basmati Rice 5kg, Milk 1L" required autocomplete="off" />
-            </div>
-            <div class="form-group">
-              <label for="itemPrice">Price (₹) *</label>
-              <input type="number" id="itemPrice" placeholder="e.g. 450" min="0" step="any" required autocomplete="off" />
-            </div>
-            <button type="submit" class="btn btn-primary">+ Add Item to Catalog</button>
-          </form>
-        </div>
-
-        <!-- Product Catalog Search & Grid -->
-        <div class="card catalog-card">
-          <div class="catalog-header">
-            <h3>📦 Product Catalog</h3>
-            <input type="text" id="searchCatalog" placeholder="🔍 Search items by name..." class="search-input" />
-          </div>
-          <div id="productGrid" class="product-grid">
-            <!-- Product cards injected by JS -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Right Column: Cart & Billing Summary -->
-      <section class="cart-section">
-        <div class="card cart-card">
-          <div class="cart-header">
-            <h3>🛒 Billing Cart</h3>
-            <button class="btn btn-text btn-sm" id="btnClearCart">Clear Cart</button>
+          <div class="form-group">
+            <label for="authPassword">Password *</label>
+            <input type="password" id="authPassword" value="password123" required autocomplete="current-password" />
           </div>
 
-          <!-- Customer Optional Info -->
-          <div class="customer-row">
-            <input type="text" id="custName" placeholder="Customer / Guest Name" class="input-sm" />
-            <input type="tel" id="custPhone" placeholder="Phone Number" class="input-sm" />
+          <div class="demo-login-hint">
+            <span>⚡ Demo Login Credentials Loaded</span>
           </div>
 
-          <!-- Cart Items List -->
-          <div id="cartItemsList" class="cart-items-list">
-            <!-- Cart items injected by JS -->
-          </div>
-
-          <!-- Totals Breakdown -->
-          <div class="cart-totals">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span id="txtSubtotal">₹0.00</span>
-            </div>
-            <div class="total-row">
-              <label for="discountInput">Discount (₹):</label>
-              <input type="number" id="discountInput" value="0" min="0" class="input-xs" />
-            </div>
-            <div class="total-row grand-total-row">
-              <span>GRAND TOTAL:</span>
-              <span id="txtGrandTotal" class="grand-total-val">₹0</span>
-            </div>
-          </div>
-
-          <!-- Payment Method Selector -->
-          <div class="payment-selector">
-            <label>Payment Mode:</label>
-            <div class="payment-options">
-              <label class="payment-opt">
-                <input type="radio" name="paymentMode" value="CASH" checked />
-                <span>Cash</span>
-              </label>
-              <label class="payment-opt">
-                <input type="radio" name="paymentMode" value="UPI" />
-                <span>UPI / QR</span>
-              </label>
-              <label class="payment-opt">
-                <input type="radio" name="paymentMode" value="CARD" />
-                <span>Card</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Checkout Button -->
-          <button class="btn btn-success btn-block btn-lg" id="btnCheckout">
-            🖨️ Proceed & Generate Bill
+          <button type="submit" class="btn btn-success btn-block btn-lg" style="margin-top: 12px;">
+            🔓 Sign In to Billing Counter
           </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Protected Store Counter Session • Simple Web POS v1.0</p>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
+
+    <!-- Screen 2: Main POS Billing View (Visible when authenticated) -->
+    <div id="mainPosContent" class="main-pos-content hidden">
+      <!-- Main Top Navbar -->
+      <header class="navbar">
+        <div class="brand">
+          <div class="brand-icon">🛒</div>
+          <div>
+            <h1 id="navStoreName">Sri Lakshmi Provision Store</h1>
+            <p id="navStoreAddress">Electronic City, Bengaluru • Ph: 9876543210</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="user-badge" id="txtUserBadge">👤 Store Owner</span>
+          <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Edit Store Header</button>
+          <button class="btn btn-danger-sm btn-sm" id="btnLogout">🔒 Logout</button>
+        </div>
+      </header>
+
+      <!-- Main 2-Column POS Billing Layout -->
+      <main class="pos-layout">
+        <!-- Left Column: Store Setup, Product Catalog & Quick Add -->
+        <section class="catalog-section">
+          
+          <!-- Editable Store Header Bar -->
+          <div class="card store-setup-card">
+            <div class="card-header">
+              <h3>🏪 Your Editable Store Name & Header</h3>
+              <span class="badge badge-emerald">Printed on Receipts</span>
+            </div>
+            <div class="store-setup-form">
+              <div class="form-group">
+                <label for="inlineStoreName">Store Name (Editable) *</label>
+                <input type="text" id="inlineStoreName" placeholder="e.g. Sri Lakshmi Provision Store" />
+              </div>
+              <div class="form-group">
+                <label for="inlineSubTitle">Subtitle / Tagline (Optional)</label>
+                <input type="text" id="inlineSubTitle" placeholder="e.g. General & Provisions" />
+              </div>
+              <div class="form-group">
+                <label for="inlineAddress">Store Address & Phone *</label>
+                <input type="text" id="inlineAddress" placeholder="e.g. Market Road, Bengaluru - Ph: 9876543210" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Add Form -->
+          <div class="card quick-add-card">
+            <div class="card-header">
+              <h3>⚡ Quick Add Item</h3>
+              <span class="badge badge-emerald">Minimal Entry</span>
+            </div>
+            <form id="quickAddForm" class="quick-add-form">
+              <div class="form-group">
+                <label for="itemName">Item Name *</label>
+                <input type="text" id="itemName" placeholder="e.g. Basmati Rice 5kg, Milk 1L" required autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label for="itemPrice">Price (₹) *</label>
+                <input type="number" id="itemPrice" placeholder="e.g. 450" min="0" step="any" required autocomplete="off" />
+              </div>
+              <button type="submit" class="btn btn-primary">+ Add Item to Catalog</button>
+            </form>
+          </div>
+
+          <!-- Product Catalog Search & Grid -->
+          <div class="card catalog-card">
+            <div class="catalog-header">
+              <h3>📦 Product Catalog</h3>
+              <input type="text" id="searchCatalog" placeholder="🔍 Search items by name..." class="search-input" />
+            </div>
+            <div id="productGrid" class="product-grid">
+              <!-- Product cards injected by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column: Cart & Billing Summary -->
+        <section class="cart-section">
+          <div class="card cart-card">
+            <div class="cart-header">
+              <h3>🛒 Billing Cart</h3>
+              <button class="btn btn-text btn-sm" id="btnClearCart">Clear Cart</button>
+            </div>
+
+            <!-- Customer Optional Info -->
+            <div class="customer-row">
+              <input type="text" id="custName" placeholder="Customer / Guest Name" class="input-sm" />
+              <input type="tel" id="custPhone" placeholder="Phone Number" class="input-sm" />
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="cartItemsList" class="cart-items-list">
+              <!-- Cart items injected by JS -->
+            </div>
+
+            <!-- Totals Breakdown -->
+            <div class="cart-totals">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span id="txtSubtotal">₹0.00</span>
+              </div>
+              <div class="total-row">
+                <label for="discountInput">Discount (₹):</label>
+                <input type="number" id="discountInput" value="0" min="0" class="input-xs" />
+              </div>
+              <div class="total-row grand-total-row">
+                <span>GRAND TOTAL:</span>
+                <span id="txtGrandTotal" class="grand-total-val">₹0</span>
+              </div>
+            </div>
+
+            <!-- Payment Method Selector -->
+            <div class="payment-selector">
+              <label>Payment Mode:</label>
+              <div class="payment-options">
+                <label class="payment-opt">
+                  <input type="radio" name="paymentMode" value="CASH" checked />
+                  <span>Cash</span>
+                </label>
+                <label class="payment-opt">
+                  <input type="radio" name="paymentMode" value="UPI" />
+                  <span>UPI / QR</span>
+                </label>
+                <label class="payment-opt">
+                  <input type="radio" name="paymentMode" value="CARD" />
+                  <span>Card</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button class="btn btn-success btn-block btn-lg" id="btnCheckout">
+              🖨️ Proceed & Generate Bill
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
 
     <!-- Modal 1: Exact Reference Receipt Preview Modal -->
     <div id="receiptModal" class="modal-overlay hidden">

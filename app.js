@@ -1,7 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
- * Features Live Editable Store Header
+ * Features Authentication & Live Editable Store Header
  */
 
 // Initial Default Catalog Items
@@ -21,16 +21,28 @@ const DEFAULT_STORE = {
   phone: '9876543210',
 };
 
-// Application State
+// Application Auth & State
+let authState = JSON.parse(localStorage.getItem('posAuthState')) || {
+  isAuthenticated: false,
+  user: null,
+};
+
 let storeConfig = JSON.parse(localStorage.getItem('storeConfig')) || DEFAULT_STORE;
 let catalog = JSON.parse(localStorage.getItem('catalogItems')) || DEFAULT_CATALOG;
 let cart = []; // [{ item, quantity }]
 
 // DOM Elements
+const authScreen = document.getElementById('authScreen');
+const mainPosContent = document.getElementById('mainPosContent');
+const authForm = document.getElementById('authForm');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const txtUserBadge = document.getElementById('txtUserBadge');
+const btnLogout = document.getElementById('btnLogout');
+
+// Store Header Elements
 const navStoreName = document.getElementById('navStoreName');
 const navStoreAddress = document.getElementById('navStoreAddress');
-
-// Inline Store Header Setup Inputs
 const inlineStoreName = document.getElementById('inlineStoreName');
 const inlineSubTitle = document.getElementById('inlineSubTitle');
 const inlineAddress = document.getElementById('inlineAddress');
@@ -72,10 +84,15 @@ const toastContainer = document.getElementById('toastContainer');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  renderAuthUI();
   initStoreConfigInputs();
   renderStoreHeader();
   renderCatalog();
   renderCart();
+
+  // Auth Event Listeners
+  authForm.addEventListener('submit', handleLogin);
+  btnLogout.addEventListener('click', handleLogout);
 
   // Inline Store Header Live Listeners
   inlineStoreName.addEventListener('input', handleInlineStoreUpdate);
@@ -100,6 +117,55 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseReceiptFooter.addEventListener('click', closeReceiptModal);
   btnPrintReceipt.addEventListener('click', printReceipt);
 });
+
+// Authentication UI & Login Handlers
+function renderAuthUI() {
+  if (authState.isAuthenticated && authState.user) {
+    authScreen.classList.add('hidden');
+    mainPosContent.classList.remove('hidden');
+    txtUserBadge.innerText = `👤 ${authState.user.name} (${authState.user.role})`;
+  } else {
+    authScreen.classList.remove('hidden');
+    mainPosContent.classList.add('hidden');
+  }
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+
+  const email = authEmail.value.trim();
+  const password = authPassword.value.trim();
+
+  if (!email || !password) {
+    showToast('Please enter both email and password.');
+    return;
+  }
+
+  // Create Authenticated Session
+  const userName = email.split('@')[0] || 'Store Owner';
+  authState = {
+    isAuthenticated: true,
+    user: {
+      email,
+      name: userName.charAt(0).toUpperCase() + userName.slice(1),
+      role: 'Owner',
+    },
+  };
+
+  localStorage.setItem('posAuthState', JSON.stringify(authState));
+  renderAuthUI();
+  showToast(`Welcome back, ${authState.user.name}! Counter unlocked.`);
+}
+
+function handleLogout() {
+  authState = {
+    isAuthenticated: false,
+    user: null,
+  };
+  localStorage.removeItem('posAuthState');
+  renderAuthUI();
+  showToast('Logged out of POS counter.');
+}
 
 // Toast Helper
 function showToast(msg) {
