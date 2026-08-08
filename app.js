@@ -1,7 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
- * Features Authentication & Live Editable Store Header
+ * Features Editable Credentials, Auth, and Live Store Header
  */
 
 // Initial Default Catalog Items
@@ -21,12 +21,19 @@ const DEFAULT_STORE = {
   phone: '9876543210',
 };
 
+const DEFAULT_CREDENTIALS = {
+  email: 'owner@store.com',
+  password: 'password123',
+};
+
 // Application Auth & State
+let posCredentials = JSON.parse(localStorage.getItem('posCredentials')) || DEFAULT_CREDENTIALS;
 let authState = JSON.parse(localStorage.getItem('posAuthState')) || {
   isAuthenticated: false,
   user: null,
 };
 
+let isRegisterMode = false;
 let storeConfig = JSON.parse(localStorage.getItem('storeConfig')) || DEFAULT_STORE;
 let catalog = JSON.parse(localStorage.getItem('catalogItems')) || DEFAULT_CATALOG;
 let cart = []; // [{ item, quantity }]
@@ -37,6 +44,10 @@ const mainPosContent = document.getElementById('mainPosContent');
 const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
+const authSubtitle = document.getElementById('authSubtitle');
+const authHint = document.getElementById('authHint');
+const btnSubmitAuth = document.getElementById('btnSubmitAuth');
+const btnToggleRegister = document.getElementById('btnToggleRegister');
 const txtUserBadge = document.getElementById('txtUserBadge');
 const btnLogout = document.getElementById('btnLogout');
 
@@ -78,6 +89,8 @@ const settingsForm = document.getElementById('settingsForm');
 const cfgStoreName = document.getElementById('cfgStoreName');
 const cfgSubTitle = document.getElementById('cfgSubTitle');
 const cfgStoreAddress = document.getElementById('cfgStoreAddress');
+const cfgAuthEmail = document.getElementById('cfgAuthEmail');
+const cfgAuthPassword = document.getElementById('cfgAuthPassword');
 
 // Toast Container
 const toastContainer = document.getElementById('toastContainer');
@@ -91,7 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCart();
 
   // Auth Event Listeners
-  authForm.addEventListener('submit', handleLogin);
+  authForm.addEventListener('submit', handleAuthSubmit);
+  btnToggleRegister.addEventListener('click', toggleRegisterMode);
   btnLogout.addEventListener('click', handleLogout);
 
   // Inline Store Header Live Listeners
@@ -118,6 +132,22 @@ document.addEventListener('DOMContentLoaded', () => {
   btnPrintReceipt.addEventListener('click', printReceipt);
 });
 
+// Toggle Login vs Register Mode
+function toggleRegisterMode() {
+  isRegisterMode = !isRegisterMode;
+  if (isRegisterMode) {
+    authSubtitle.innerText = 'Register new custom store login credentials';
+    btnSubmitAuth.innerText = '✨ Register New Login & Enter Counter';
+    btnToggleRegister.innerText = 'Already have credentials? Back to Sign In';
+    authHint.innerHTML = '<span>Setting custom credentials for your store counter</span>';
+  } else {
+    authSubtitle.innerText = 'Sign in to your store billing counter';
+    btnSubmitAuth.innerText = '🔓 Sign In to Billing Counter';
+    btnToggleRegister.innerText = 'Need to change credentials or register new store?';
+    authHint.innerHTML = `<span>Active Login: ${posCredentials.email}</span>`;
+  }
+}
+
 // Authentication UI & Login Handlers
 function renderAuthUI() {
   if (authState.isAuthenticated && authState.user) {
@@ -127,10 +157,13 @@ function renderAuthUI() {
   } else {
     authScreen.classList.remove('hidden');
     mainPosContent.classList.add('hidden');
+    authEmail.value = posCredentials.email;
+    authPassword.value = posCredentials.password;
+    authHint.innerHTML = `<span>Active Login: ${posCredentials.email}</span>`;
   }
 }
 
-function handleLogin(e) {
+function handleAuthSubmit(e) {
   e.preventDefault();
 
   const email = authEmail.value.trim();
@@ -139,6 +172,20 @@ function handleLogin(e) {
   if (!email || !password) {
     showToast('Please enter both email and password.');
     return;
+  }
+
+  if (isRegisterMode) {
+    // Save New Custom Credentials
+    posCredentials = { email, password };
+    localStorage.setItem('posCredentials', JSON.stringify(posCredentials));
+    showToast('Custom login credentials created & saved!');
+    isRegisterMode = false;
+  } else {
+    // Validate against Saved Credentials
+    if (email.toLowerCase() !== posCredentials.email.toLowerCase() || password !== posCredentials.password) {
+      showToast('❌ Invalid email or password. Try again.');
+      return;
+    }
   }
 
   // Create Authenticated Session
@@ -154,7 +201,7 @@ function handleLogin(e) {
 
   localStorage.setItem('posAuthState', JSON.stringify(authState));
   renderAuthUI();
-  showToast(`Welcome back, ${authState.user.name}! Counter unlocked.`);
+  showToast(`Welcome, ${authState.user.name}! Counter unlocked.`);
 }
 
 function handleLogout() {
@@ -457,6 +504,8 @@ function openSettingsModal() {
   cfgStoreName.value = storeConfig.name;
   cfgSubTitle.value = storeConfig.subTitle || '';
   cfgStoreAddress.value = storeConfig.address;
+  cfgAuthEmail.value = posCredentials.email;
+  cfgAuthPassword.value = posCredentials.password;
   settingsModal.classList.remove('hidden');
 }
 
@@ -466,17 +515,36 @@ function closeSettingsModal() {
 
 function handleSaveSettings(e) {
   e.preventDefault();
+
+  // Save Store Header
   storeConfig = {
     name: cfgStoreName.value.trim(),
     subTitle: cfgSubTitle.value.trim(),
     address: cfgStoreAddress.value.trim(),
   };
-
   localStorage.setItem('storeConfig', JSON.stringify(storeConfig));
+
+  // Save New Credentials if provided
+  const newEmail = cfgAuthEmail.value.trim();
+  const newPassword = cfgAuthPassword.value.trim();
+  if (newEmail && newPassword) {
+    posCredentials = { email: newEmail, password: newPassword };
+    localStorage.setItem('posCredentials', JSON.stringify(posCredentials));
+
+    // Update active user session
+    if (authState.user) {
+      const userName = newEmail.split('@')[0] || 'Store Owner';
+      authState.user.email = newEmail;
+      authState.user.name = userName.charAt(0).toUpperCase() + userName.slice(1);
+      localStorage.setItem('posAuthState', JSON.stringify(authState));
+    }
+  }
+
   initStoreConfigInputs();
   renderStoreHeader();
+  renderAuthUI();
   closeSettingsModal();
-  showToast('Store settings saved successfully!');
+  showToast('Store details & login credentials saved successfully!');
 }
 
 // Escape HTML Utility

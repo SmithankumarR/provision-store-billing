@@ -166,6 +166,25 @@ body {
   text-align: center;
 }
 
+.auth-toggle-box {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-link:hover {
+  color: var(--primary-hover);
+}
+
 .auth-footer {
   text-align: center;
   margin-top: 24px;

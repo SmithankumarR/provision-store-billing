@@ -18,7 +18,7 @@
         <div class="auth-brand">
           <div class="auth-logo">🛒</div>
           <h2>Provision Store POS Portal</h2>
-          <p>Sign in to your store billing counter</p>
+          <p id="authSubtitle">Sign in to your store billing counter</p>
         </div>
 
         <form id="authForm" class="auth-form">
@@ -31,14 +31,20 @@
             <input type="password" id="authPassword" value="password123" required autocomplete="current-password" />
           </div>
 
-          <div class="demo-login-hint">
-            <span>⚡ Demo Login Credentials Loaded</span>
+          <div class="demo-login-hint" id="authHint">
+            <span>⚡ Default Demo: owner@store.com / password123</span>
           </div>
 
-          <button type="submit" class="btn btn-success btn-block btn-lg" style="margin-top: 12px;">
+          <button type="submit" class="btn btn-success btn-block btn-lg" id="btnSubmitAuth" style="margin-top: 12px;">
             🔓 Sign In to Billing Counter
           </button>
         </form>
+
+        <div class="auth-toggle-box">
+          <button type="button" class="btn-link" id="btnToggleRegister">
+            Need to change credentials or register new store?
+          </button>
+        </div>
 
         <div class="auth-footer">
           <p>Protected Store Counter Session • Simple Web POS v1.0</p>
@@ -59,7 +65,7 @@
         </div>
         <div class="header-actions">
           <span class="user-badge" id="txtUserBadge">👤 Store Owner</span>
-          <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Edit Store Header</button>
+          <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Edit Store & Password</button>
           <button class="btn btn-danger-sm btn-sm" id="btnLogout">🔒 Logout</button>
         </div>
       </header>
@@ -201,15 +207,16 @@
       </div>
     </div>
 
-    <!-- Modal 2: Store Settings Modal -->
+    <!-- Modal 2: Store & Change Credentials Settings Modal -->
     <div id="settingsModal" class="modal-overlay hidden">
       <div class="modal-card">
         <div class="modal-header">
-          <h2>⚙️ Store Header Settings</h2>
+          <h2>⚙️ Store Header & Login Credentials</h2>
           <button class="modal-close" id="btnCloseSettings">&times;</button>
         </div>
 
         <form id="settingsForm" class="modal-body">
+          <h4 style="color: var(--primary); margin-bottom: 8px;">🏪 Store Info Header</h4>
           <div class="form-group">
             <label for="cfgStoreName">Store Name (Editable) *</label>
             <input type="text" id="cfgStoreName" required />
@@ -223,9 +230,21 @@
             <input type="text" id="cfgStoreAddress" required />
           </div>
 
+          <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border-color);" />
+
+          <h4 style="color: var(--primary); margin-bottom: 8px;">🔐 Change Login Credentials</h4>
+          <div class="form-group">
+            <label for="cfgAuthEmail">New Email / Username *</label>
+            <input type="text" id="cfgAuthEmail" placeholder="e.g. smithan@store.com" />
+          </div>
+          <div class="form-group">
+            <label for="cfgAuthPassword">New Password *</label>
+            <input type="password" id="cfgAuthPassword" placeholder="Enter new password" />
+          </div>
+
           <div class="modal-footer" style="padding-top: 16px;">
             <button type="button" class="btn btn-secondary" id="btnCancelSettings">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="submit" class="btn btn-primary">Save Settings & Passwords</button>
           </div>
         </form>
       </div>
