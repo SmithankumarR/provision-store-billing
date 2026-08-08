@@ -135,6 +135,21 @@ body {
   margin-bottom: 20px;
 }
 
+.store-setup-card {
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border-left: 4px solid var(--primary);
+}
+
+.store-setup-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.store-setup-form .form-group:last-child {
+  grid-column: 1 / -1;
+}
+
 .card-header, .catalog-header, .cart-header {
   display: flex;
   justify-content: space-between;

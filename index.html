@@ -16,19 +16,42 @@
       <div class="brand">
         <div class="brand-icon">🛒</div>
         <div>
-          <h1 id="navStoreName">ಶ್ರೀ ಲಕ್ಷ್ಮಿ ಪ್ರೊವಿಷನ್ಸ್ (Sri Lakshmi Provisions)</h1>
-          <p id="navStoreAddress">KYATSANDRA, Siddaganga Math, Tumkur District - 572104 • Ph: 9876543210</p>
+          <h1 id="navStoreName">Sri Lakshmi Provision Store</h1>
+          <p id="navStoreAddress">Electronic City, Bengaluru • Ph: 9876543210</p>
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Store Settings</button>
+        <button class="btn btn-secondary btn-sm" id="btnOpenSettings">⚙️ Edit Store Header</button>
       </div>
     </header>
 
     <!-- Main 2-Column POS Billing Layout -->
     <main class="pos-layout">
-      <!-- Left Column: Product Catalog & Quick Add -->
+      <!-- Left Column: Store Setup, Product Catalog & Quick Add -->
       <section class="catalog-section">
+        
+        <!-- Editable Store Header Bar -->
+        <div class="card store-setup-card">
+          <div class="card-header">
+            <h3>🏪 Your Editable Store Name & Header</h3>
+            <span class="badge badge-emerald">Printed on Receipts</span>
+          </div>
+          <div class="store-setup-form">
+            <div class="form-group">
+              <label for="inlineStoreName">Store Name (Editable) *</label>
+              <input type="text" id="inlineStoreName" placeholder="e.g. Sri Lakshmi Provision Store" />
+            </div>
+            <div class="form-group">
+              <label for="inlineSubTitle">Subtitle / Tagline (Optional)</label>
+              <input type="text" id="inlineSubTitle" placeholder="e.g. General & Provisions" />
+            </div>
+            <div class="form-group">
+              <label for="inlineAddress">Store Address & Phone *</label>
+              <input type="text" id="inlineAddress" placeholder="e.g. Market Road, Bengaluru - Ph: 9876543210" />
+            </div>
+          </div>
+        </div>
+
         <!-- Quick Add Form -->
         <div class="card quick-add-card">
           <div class="card-header">
@@ -148,20 +171,16 @@
 
         <form id="settingsForm" class="modal-body">
           <div class="form-group">
-            <label for="cfgStoreName">Store Name (Kannada & English) *</label>
+            <label for="cfgStoreName">Store Name (Editable) *</label>
             <input type="text" id="cfgStoreName" required />
           </div>
           <div class="form-group">
-            <label for="cfgSubTitle">Subtitle / Department *</label>
-            <input type="text" id="cfgSubTitle" placeholder="e.g. ಕಲ್ಯಾಣಿ ಅತಿಥಿ ಗೃಹ" />
+            <label for="cfgSubTitle">Subtitle / Tagline (Optional)</label>
+            <input type="text" id="cfgSubTitle" placeholder="e.g. General & Provisions" />
           </div>
           <div class="form-group">
-            <label for="cfgStoreAddress">Address *</label>
+            <label for="cfgStoreAddress">Address & Phone *</label>
             <input type="text" id="cfgStoreAddress" required />
-          </div>
-          <div class="form-group">
-            <label for="cfgStorePhone">Phone Number *</label>
-            <input type="text" id="cfgStorePhone" required />
           </div>
 
           <div class="modal-footer" style="padding-top: 16px;">

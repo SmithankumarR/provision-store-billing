@@ -1,7 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
- * Styled after Reference Receipt Format
+ * Features Live Editable Store Header
  */
 
 // Initial Default Catalog Items
@@ -15,9 +15,9 @@ const DEFAULT_CATALOG = [
 ];
 
 const DEFAULT_STORE = {
-  name: 'ಶ್ರೀ ಸಿದ್ಧಗಂಗಾ ಮಠ (Shree Siddaganga Math)',
-  subTitle: 'ಕಲ್ಯಾಣಿ ಅತಿಥಿ ಗೃಹ',
-  address: 'KYATSANDRA, Siddaganga Math, Tumkur District - 572104',
+  name: 'Sri Lakshmi Provision Store',
+  subTitle: 'General & Provision Store',
+  address: '45 Market Road, Electronic City, Bengaluru - Ph: 9876543210',
   phone: '9876543210',
 };
 
@@ -29,6 +29,13 @@ let cart = []; // [{ item, quantity }]
 // DOM Elements
 const navStoreName = document.getElementById('navStoreName');
 const navStoreAddress = document.getElementById('navStoreAddress');
+
+// Inline Store Header Setup Inputs
+const inlineStoreName = document.getElementById('inlineStoreName');
+const inlineSubTitle = document.getElementById('inlineSubTitle');
+const inlineAddress = document.getElementById('inlineAddress');
+
+// POS Catalog & Form Elements
 const quickAddForm = document.getElementById('quickAddForm');
 const itemNameInput = document.getElementById('itemName');
 const itemPriceInput = document.getElementById('itemPrice');
@@ -59,18 +66,23 @@ const settingsForm = document.getElementById('settingsForm');
 const cfgStoreName = document.getElementById('cfgStoreName');
 const cfgSubTitle = document.getElementById('cfgSubTitle');
 const cfgStoreAddress = document.getElementById('cfgStoreAddress');
-const cfgStorePhone = document.getElementById('cfgStorePhone');
 
 // Toast Container
 const toastContainer = document.getElementById('toastContainer');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  initStoreConfigInputs();
   renderStoreHeader();
   renderCatalog();
   renderCart();
 
-  // Event Listeners
+  // Inline Store Header Live Listeners
+  inlineStoreName.addEventListener('input', handleInlineStoreUpdate);
+  inlineSubTitle.addEventListener('input', handleInlineStoreUpdate);
+  inlineAddress.addEventListener('input', handleInlineStoreUpdate);
+
+  // POS Event Listeners
   quickAddForm.addEventListener('submit', handleQuickAdd);
   searchCatalog.addEventListener('input', (e) => renderCatalog(e.target.value));
   discountInput.addEventListener('input', updateCartTotals);
@@ -101,10 +113,27 @@ function showToast(msg) {
   }, 2500);
 }
 
+// Populate Store Config Inputs
+function initStoreConfigInputs() {
+  inlineStoreName.value = storeConfig.name || '';
+  inlineSubTitle.value = storeConfig.subTitle || '';
+  inlineAddress.value = storeConfig.address || '';
+}
+
+// Live Update Store Config on Typing
+function handleInlineStoreUpdate() {
+  storeConfig.name = inlineStoreName.value.trim() || 'My Provision Store';
+  storeConfig.subTitle = inlineSubTitle.value.trim() || '';
+  storeConfig.address = inlineAddress.value.trim() || 'Main Road, Bengaluru';
+
+  localStorage.setItem('storeConfig', JSON.stringify(storeConfig));
+  renderStoreHeader();
+}
+
 // Store Header Rendering
 function renderStoreHeader() {
   navStoreName.innerText = storeConfig.name;
-  navStoreAddress.innerText = `${storeConfig.address} • Ph: ${storeConfig.phone}`;
+  navStoreAddress.innerText = `${storeConfig.subTitle ? storeConfig.subTitle + ' • ' : ''}${storeConfig.address}`;
 }
 
 // Catalog Rendering
@@ -254,7 +283,7 @@ function updateCartTotals() {
   txtGrandTotal.innerText = `₹${grandTotal}`;
 }
 
-// Checkout & Exact Reference Receipt Generation
+// Checkout & Dynamic Store Receipt Generation
 function handleCheckout() {
   if (cart.length === 0) {
     showToast('Cart is empty! Add items before checkout.');
@@ -288,7 +317,7 @@ function handleCheckout() {
   const discount = Math.max(0, parseFloat(discountInput.value) || 0);
   const grandTotal = Math.max(0, Math.round(subtotal - discount));
 
-  // Build Reference Receipt HTML Layout
+  // Build Dynamic Reference Receipt HTML Layout
   const receiptHtml = `
     <div class="rcpt-header">
       <div class="rcpt-title">${escapeHtml(storeConfig.name)}</div>
@@ -362,7 +391,6 @@ function openSettingsModal() {
   cfgStoreName.value = storeConfig.name;
   cfgSubTitle.value = storeConfig.subTitle || '';
   cfgStoreAddress.value = storeConfig.address;
-  cfgStorePhone.value = storeConfig.phone;
   settingsModal.classList.remove('hidden');
 }
 
@@ -376,10 +404,10 @@ function handleSaveSettings(e) {
     name: cfgStoreName.value.trim(),
     subTitle: cfgSubTitle.value.trim(),
     address: cfgStoreAddress.value.trim(),
-    phone: cfgStorePhone.value.trim(),
   };
 
   localStorage.setItem('storeConfig', JSON.stringify(storeConfig));
+  initStoreConfigInputs();
   renderStoreHeader();
   closeSettingsModal();
   showToast('Store settings saved successfully!');
