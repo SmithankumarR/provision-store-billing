@@ -1,7 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
- * Features Editable Credentials, Auth, and Live Store Header
+ * Features Strict Auth Validation, Editable Credentials, and Live Store Header
  */
 
 // Initial Default Catalog Items
@@ -135,20 +135,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // Toggle Login vs Register Mode
 function toggleRegisterMode() {
   isRegisterMode = !isRegisterMode;
+  authEmail.value = '';
+  authPassword.value = '';
+
   if (isRegisterMode) {
     authSubtitle.innerText = 'Register new custom store login credentials';
     btnSubmitAuth.innerText = '✨ Register New Login & Enter Counter';
     btnToggleRegister.innerText = 'Already have credentials? Back to Sign In';
-    authHint.innerHTML = '<span>Setting custom credentials for your store counter</span>';
+    authHint.innerHTML = '<span>Type your new email and password to create login</span>';
   } else {
     authSubtitle.innerText = 'Sign in to your store billing counter';
     btnSubmitAuth.innerText = '🔓 Sign In to Billing Counter';
     btnToggleRegister.innerText = 'Need to change credentials or register new store?';
-    authHint.innerHTML = `<span>Active Login: ${posCredentials.email}</span>`;
+    authHint.innerHTML = `<span>Valid Credentials Required to Enter</span>`;
   }
 }
 
-// Authentication UI & Login Handlers
+// Authentication UI & Strict Login Validation
 function renderAuthUI() {
   if (authState.isAuthenticated && authState.user) {
     authScreen.classList.add('hidden');
@@ -157,9 +160,7 @@ function renderAuthUI() {
   } else {
     authScreen.classList.remove('hidden');
     mainPosContent.classList.add('hidden');
-    authEmail.value = posCredentials.email;
-    authPassword.value = posCredentials.password;
-    authHint.innerHTML = `<span>Active Login: ${posCredentials.email}</span>`;
+    authHint.innerHTML = `<span>Registered Login: ${posCredentials.email}</span>`;
   }
 }
 
@@ -178,13 +179,16 @@ function handleAuthSubmit(e) {
     // Save New Custom Credentials
     posCredentials = { email, password };
     localStorage.setItem('posCredentials', JSON.stringify(posCredentials));
-    showToast('Custom login credentials created & saved!');
+    showToast('✨ Custom credentials registered & saved!');
     isRegisterMode = false;
   } else {
-    // Validate against Saved Credentials
-    if (email.toLowerCase() !== posCredentials.email.toLowerCase() || password !== posCredentials.password) {
-      showToast('❌ Invalid email or password. Try again.');
-      return;
+    // STRICT VALIDATION: Check exact Email and Password match
+    const validEmail = posCredentials.email.trim().toLowerCase();
+    const inputEmail = email.toLowerCase();
+
+    if (inputEmail !== validEmail || password !== posCredentials.password) {
+      showToast('❌ Invalid email or password! Access denied.');
+      return; // BLOCK ACCESS IMMEDIATELY
     }
   }
 
@@ -210,6 +214,8 @@ function handleLogout() {
     user: null,
   };
   localStorage.removeItem('posAuthState');
+  authEmail.value = '';
+  authPassword.value = '';
   renderAuthUI();
   showToast('Logged out of POS counter.');
 }
