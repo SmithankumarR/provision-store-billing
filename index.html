@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Kannada:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div class="app-container">
@@ -16,8 +16,8 @@
       <div class="brand">
         <div class="brand-icon">🛒</div>
         <div>
-          <h1 id="navStoreName">Sri Lakshmi Provisions</h1>
-          <p id="navStoreAddress">Market Road, Bengaluru • Ph: 9876543210</p>
+          <h1 id="navStoreName">ಶ್ರೀ ಲಕ್ಷ್ಮಿ ಪ್ರೊವಿಷನ್ಸ್ (Sri Lakshmi Provisions)</h1>
+          <p id="navStoreAddress">KYATSANDRA, Siddaganga Math, Tumkur District - 572104 • Ph: 9876543210</p>
         </div>
       </div>
       <div class="header-actions">
@@ -70,8 +70,8 @@
 
           <!-- Customer Optional Info -->
           <div class="customer-row">
-            <input type="text" id="custName" placeholder="Customer Name (Optional)" class="input-sm" />
-            <input type="tel" id="custPhone" placeholder="Phone Number (Optional)" class="input-sm" />
+            <input type="text" id="custName" placeholder="Customer / Guest Name" class="input-sm" />
+            <input type="tel" id="custPhone" placeholder="Phone Number" class="input-sm" />
           </div>
 
           <!-- Cart Items List -->
@@ -116,30 +116,24 @@
 
           <!-- Checkout Button -->
           <button class="btn btn-success btn-block btn-lg" id="btnCheckout">
-            🖨️ Complete Checkout & Print Bill
+            🖨️ Proceed & Generate Bill
           </button>
         </div>
       </section>
     </main>
 
-    <!-- Modal 1: Thermal Receipt Preview Modal -->
+    <!-- Modal 1: Exact Reference Receipt Preview Modal -->
     <div id="receiptModal" class="modal-overlay hidden">
-      <div class="modal-card receipt-modal-card">
-        <div class="modal-header">
-          <h2>📄 Invoice Receipt Preview</h2>
-          <button class="modal-close" id="btnCloseReceipt">&times;</button>
+      <div class="receipt-card-wrapper">
+        <button class="receipt-close-btn" id="btnCloseReceipt">&times;</button>
+        
+        <div id="paperReceipt" class="paper-receipt">
+          <!-- Dynamic Receipt Content Injected Here -->
         </div>
 
-        <div class="modal-body">
-          <!-- Paper Thermal Receipt Container -->
-          <div id="paperReceipt" class="paper-receipt">
-            <!-- Formatted receipt content injected by JS -->
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="btnCloseReceiptFooter">Close</button>
-          <button class="btn btn-primary btn-lg" id="btnPrintReceipt">🖨️ Print Receipt</button>
+        <div class="receipt-card-actions">
+          <button class="btn btn-receipt-close" id="btnCloseReceiptFooter">Close</button>
+          <button class="btn btn-receipt-print" id="btnPrintReceipt">🖨️ Print Receipt</button>
         </div>
       </div>
     </div>
@@ -154,8 +148,12 @@
 
         <form id="settingsForm" class="modal-body">
           <div class="form-group">
-            <label for="cfgStoreName">Store Name *</label>
+            <label for="cfgStoreName">Store Name (Kannada & English) *</label>
             <input type="text" id="cfgStoreName" required />
+          </div>
+          <div class="form-group">
+            <label for="cfgSubTitle">Subtitle / Department *</label>
+            <input type="text" id="cfgSubTitle" placeholder="e.g. ಕಲ್ಯಾಣಿ ಅತಿಥಿ ಗೃಹ" />
           </div>
           <div class="form-group">
             <label for="cfgStoreAddress">Address *</label>
@@ -164,10 +162,6 @@
           <div class="form-group">
             <label for="cfgStorePhone">Phone Number *</label>
             <input type="text" id="cfgStorePhone" required />
-          </div>
-          <div class="form-group">
-            <label for="cfgFooterMsg">Receipt Footer Message</label>
-            <input type="text" id="cfgFooterMsg" placeholder="Thank you for shopping with us!" />
           </div>
 
           <div class="modal-footer" style="padding-top: 16px;">

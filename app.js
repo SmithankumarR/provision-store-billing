@@ -1,6 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
+ * Styled after Reference Receipt Format
  */
 
 // Initial Default Catalog Items
@@ -14,10 +15,10 @@ const DEFAULT_CATALOG = [
 ];
 
 const DEFAULT_STORE = {
-  name: 'Sri Lakshmi Provision Store',
-  address: '45 Market Road, Electronic City, Bengaluru',
+  name: 'ಶ್ರೀ ಸಿದ್ಧಗಂಗಾ ಮಠ (Shree Siddaganga Math)',
+  subTitle: 'ಕಲ್ಯಾಣಿ ಅತಿಥಿ ಗೃಹ',
+  address: 'KYATSANDRA, Siddaganga Math, Tumkur District - 572104',
   phone: '9876543210',
-  footerMsg: 'Thank you for shopping with us! Visit again.',
 };
 
 // Application State
@@ -56,9 +57,9 @@ const btnCloseSettings = document.getElementById('btnCloseSettings');
 const btnCancelSettings = document.getElementById('btnCancelSettings');
 const settingsForm = document.getElementById('settingsForm');
 const cfgStoreName = document.getElementById('cfgStoreName');
+const cfgSubTitle = document.getElementById('cfgSubTitle');
 const cfgStoreAddress = document.getElementById('cfgStoreAddress');
 const cfgStorePhone = document.getElementById('cfgStorePhone');
-const cfgFooterMsg = document.getElementById('cfgFooterMsg');
 
 // Toast Container
 const toastContainer = document.getElementById('toastContainer');
@@ -253,62 +254,94 @@ function updateCartTotals() {
   txtGrandTotal.innerText = `₹${grandTotal}`;
 }
 
-// Checkout & Receipt Generation
+// Checkout & Exact Reference Receipt Generation
 function handleCheckout() {
   if (cart.length === 0) {
     showToast('Cart is empty! Add items before checkout.');
     return;
   }
 
-  const invoiceNum = 'INV-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
-  const dateStr = new Date().toLocaleString();
-  const custName = custNameInput.value.trim() || 'Walk-in Customer';
-  const custPhone = custPhoneInput.value.trim();
+  const receiptNo = 'RCP' + Math.floor(1000 + Math.random() * 9000);
+  const today = new Date();
+  const dateStr = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+  
+  const custName = custNameInput.value.trim() || 'manu';
+  const custPhone = custPhoneInput.value.trim() || '7584628451';
   const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
 
   let subtotal = 0;
+  let itemsRowsHtml = '';
+
   cart.forEach(({ item, quantity }) => {
-    subtotal += item.price * quantity;
+    const lineTotal = item.price * quantity;
+    subtotal += lineTotal;
+    itemsRowsHtml += `
+      <tr>
+        <td>${escapeHtml(item.name)}</td>
+        <td style="text-align: center;">${quantity}</td>
+        <td style="text-align: right;">₹${item.price.toFixed(2)}</td>
+        <td style="text-align: right;">₹${lineTotal.toFixed(2)}</td>
+      </tr>
+    `;
   });
+
   const discount = Math.max(0, parseFloat(discountInput.value) || 0);
   const grandTotal = Math.max(0, Math.round(subtotal - discount));
 
-  // Build Monospace Thermal Paper Receipt Layout
-  let receiptText = `${storeConfig.name.toUpperCase()}
-${storeConfig.address}
-Ph: ${storeConfig.phone}
-----------------------------------------
-Invoice #: ${invoiceNum}
-Date: ${dateStr}
-Customer: ${custName}${custPhone ? ' (' + custPhone + ')' : ''}
-Payment Mode: ${paymentMode}
-----------------------------------------
-ITEM NAME           QTY   PRICE   TOTAL
-----------------------------------------
-`;
+  // Build Reference Receipt HTML Layout
+  const receiptHtml = `
+    <div class="rcpt-header">
+      <div class="rcpt-title">${escapeHtml(storeConfig.name)}</div>
+      ${storeConfig.subTitle ? `<div class="rcpt-subtitle">${escapeHtml(storeConfig.subTitle)}</div>` : ''}
+      <div class="rcpt-address">${escapeHtml(storeConfig.address)}</div>
+    </div>
 
-  cart.forEach(({ item, quantity }) => {
-    const lineTotal = (item.price * quantity).toFixed(2);
-    const paddedName = padString(item.name, 18);
-    const paddedQty = padString(String(quantity), 5);
-    const paddedPrice = padString(item.price.toFixed(2), 7);
+    <div class="rcpt-meta-row">
+      <span>Receipt No: ${receiptNo}</span>
+      <span>Date: ${dateStr}</span>
+    </div>
 
-    receiptText += `${paddedName} ${paddedQty} ${paddedPrice} ${lineTotal}\n`;
-  });
+    <div class="rcpt-details-list">
+      <div class="rcpt-detail-item">
+        <span class="rcpt-label">Customer Name:</span>
+        <span class="rcpt-val">${escapeHtml(custName)}</span>
+      </div>
+      <div class="rcpt-detail-item">
+        <span class="rcpt-label">Phone:</span>
+        <span class="rcpt-val">${escapeHtml(custPhone)}</span>
+      </div>
 
-  receiptText += `----------------------------------------
-Subtotal:                    ₹${subtotal.toFixed(2)}
-`;
-  if (discount > 0) {
-    receiptText += `Discount:                   -₹${discount.toFixed(2)}\n`;
-  }
-  receiptText += `========================================
-GRAND TOTAL:                 ₹${grandTotal}
-========================================
+      <table class="rcpt-items-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th style="text-align: center;">Qty</th>
+            <th style="text-align: right;">Price</th>
+            <th style="text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsRowsHtml}
+        </tbody>
+      </table>
 
-${storeConfig.footerMsg || 'Thank you for your visit!'}`;
+      <div class="rcpt-detail-item" style="margin-top: 10px;">
+        <span class="rcpt-label">Total Bill:</span>
+        <span class="rcpt-val-bold">₹${subtotal.toFixed(2)}</span>
+      </div>
+      ${discount > 0 ? `
+      <div class="rcpt-detail-item">
+        <span class="rcpt-label">Discount:</span>
+        <span class="rcpt-val" style="color: #ef4444;">-₹${discount.toFixed(2)}</span>
+      </div>` : ''}
+      <div class="rcpt-detail-item" style="margin-top: 6px;">
+        <span class="rcpt-label">Balance Settled (${paymentMode}):</span>
+        <span class="rcpt-val-bold">₹${grandTotal}</span>
+      </div>
+    </div>
+  `;
 
-  paperReceipt.innerText = receiptText;
+  paperReceipt.innerHTML = receiptHtml;
   receiptModal.classList.remove('hidden');
 }
 
@@ -327,9 +360,9 @@ function closeReceiptModal() {
 // Settings Modal Handler
 function openSettingsModal() {
   cfgStoreName.value = storeConfig.name;
+  cfgSubTitle.value = storeConfig.subTitle || '';
   cfgStoreAddress.value = storeConfig.address;
   cfgStorePhone.value = storeConfig.phone;
-  cfgFooterMsg.value = storeConfig.footerMsg || '';
   settingsModal.classList.remove('hidden');
 }
 
@@ -341,23 +374,15 @@ function handleSaveSettings(e) {
   e.preventDefault();
   storeConfig = {
     name: cfgStoreName.value.trim(),
+    subTitle: cfgSubTitle.value.trim(),
     address: cfgStoreAddress.value.trim(),
     phone: cfgStorePhone.value.trim(),
-    footerMsg: cfgFooterMsg.value.trim(),
   };
 
   localStorage.setItem('storeConfig', JSON.stringify(storeConfig));
   renderStoreHeader();
   closeSettingsModal();
   showToast('Store settings saved successfully!');
-}
-
-// String Padding Utility for Receipt Table Alignment
-function padString(str, length) {
-  if (str.length > length) {
-    return str.substring(0, length - 2) + '..';
-  }
-  return str.padEnd(length, ' ');
 }
 
 // Escape HTML Utility
