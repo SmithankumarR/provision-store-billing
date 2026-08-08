@@ -312,11 +312,13 @@ body {
 }
 
 input[type="text"],
+input[type="password"],
 input[type="number"],
 input[type="tel"] {
   width: 100%;
+  height: 46px;
   padding: 10px 14px;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   font-family: var(--font-main);
   font-size: 14px;
@@ -328,6 +330,28 @@ input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.15);
+}
+
+.auth-error-alert {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.auth-error-alert.hidden {
+  display: none !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .search-input {

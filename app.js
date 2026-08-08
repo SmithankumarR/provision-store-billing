@@ -33,7 +33,6 @@ let authState = JSON.parse(localStorage.getItem('posAuthState')) || {
   user: null,
 };
 
-let isRegisterMode = false;
 let storeConfig = JSON.parse(localStorage.getItem('storeConfig')) || DEFAULT_STORE;
 let catalog = JSON.parse(localStorage.getItem('catalogItems')) || DEFAULT_CATALOG;
 let cart = []; // [{ item, quantity }]
@@ -44,10 +43,7 @@ const mainPosContent = document.getElementById('mainPosContent');
 const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
-const authSubtitle = document.getElementById('authSubtitle');
-const authHint = document.getElementById('authHint');
-const btnSubmitAuth = document.getElementById('btnSubmitAuth');
-const btnToggleRegister = document.getElementById('btnToggleRegister');
+const authErrorAlert = document.getElementById('authErrorAlert');
 const txtUserBadge = document.getElementById('txtUserBadge');
 const btnLogout = document.getElementById('btnLogout');
 
@@ -105,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auth Event Listeners
   authForm.addEventListener('submit', handleAuthSubmit);
-  btnToggleRegister.addEventListener('click', toggleRegisterMode);
   btnLogout.addEventListener('click', handleLogout);
 
   // Inline Store Header Live Listeners
@@ -132,25 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnPrintReceipt.addEventListener('click', printReceipt);
 });
 
-// Toggle Login vs Register Mode
-function toggleRegisterMode() {
-  isRegisterMode = !isRegisterMode;
-  authEmail.value = '';
-  authPassword.value = '';
-
-  if (isRegisterMode) {
-    authSubtitle.innerText = 'Register new custom store login credentials';
-    btnSubmitAuth.innerText = '✨ Register New Login & Enter Counter';
-    btnToggleRegister.innerText = 'Already have credentials? Back to Sign In';
-    authHint.innerHTML = '<span>Type your new email and password to create login</span>';
-  } else {
-    authSubtitle.innerText = 'Sign in to your store billing counter';
-    btnSubmitAuth.innerText = '🔓 Sign In to Billing Counter';
-    btnToggleRegister.innerText = 'Need to change credentials or register new store?';
-    authHint.innerHTML = `<span>Valid Credentials Required to Enter</span>`;
-  }
-}
-
 // Authentication UI & Strict Login Validation
 function renderAuthUI() {
   if (authState.isAuthenticated && authState.user) {
@@ -160,36 +136,32 @@ function renderAuthUI() {
   } else {
     authScreen.classList.remove('hidden');
     mainPosContent.classList.add('hidden');
-    authHint.innerHTML = `<span>Registered Login: ${posCredentials.email}</span>`;
+    authEmail.value = '';
+    authPassword.value = '';
+    if (authErrorAlert) authErrorAlert.classList.add('hidden');
   }
 }
 
 function handleAuthSubmit(e) {
   e.preventDefault();
+  if (authErrorAlert) authErrorAlert.classList.add('hidden');
 
   const email = authEmail.value.trim();
   const password = authPassword.value.trim();
 
   if (!email || !password) {
-    showToast('Please enter both email and password.');
+    showAuthError('Please enter both email and password.');
     return;
   }
 
-  if (isRegisterMode) {
-    // Save New Custom Credentials
-    posCredentials = { email, password };
-    localStorage.setItem('posCredentials', JSON.stringify(posCredentials));
-    showToast('✨ Custom credentials registered & saved!');
-    isRegisterMode = false;
-  } else {
-    // STRICT VALIDATION: Check exact Email and Password match
-    const validEmail = posCredentials.email.trim().toLowerCase();
-    const inputEmail = email.toLowerCase();
+  // STRICT VALIDATION: Check exact Email and Password match
+  const validEmail = posCredentials.email.trim().toLowerCase();
+  const inputEmail = email.toLowerCase();
 
-    if (inputEmail !== validEmail || password !== posCredentials.password) {
-      showToast('❌ Invalid email or password! Access denied.');
-      return; // BLOCK ACCESS IMMEDIATELY
-    }
+  if (inputEmail !== validEmail || password !== posCredentials.password) {
+    showAuthError('❌ Invalid email or password. Access denied.');
+    showToast('❌ Invalid email or password!');
+    return; // STRICT BLOCK
   }
 
   // Create Authenticated Session
@@ -208,14 +180,19 @@ function handleAuthSubmit(e) {
   showToast(`Welcome, ${authState.user.name}! Counter unlocked.`);
 }
 
+function showAuthError(msg) {
+  if (authErrorAlert) {
+    authErrorAlert.querySelector('span').innerText = msg;
+    authErrorAlert.classList.remove('hidden');
+  }
+}
+
 function handleLogout() {
   authState = {
     isAuthenticated: false,
     user: null,
   };
   localStorage.removeItem('posAuthState');
-  authEmail.value = '';
-  authPassword.value = '';
   renderAuthUI();
   showToast('Logged out of POS counter.');
 }
