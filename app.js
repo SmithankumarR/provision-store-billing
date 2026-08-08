@@ -103,6 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
   authForm.addEventListener('submit', handleAuthSubmit);
   btnLogout.addEventListener('click', handleLogout);
 
+  // Clear error alert on typing
+  authEmail.addEventListener('input', () => {
+    if (authErrorAlert) authErrorAlert.classList.add('hidden');
+  });
+  authPassword.addEventListener('input', () => {
+    if (authErrorAlert) authErrorAlert.classList.add('hidden');
+  });
+
   // Inline Store Header Live Listeners
   inlineStoreName.addEventListener('input', handleInlineStoreUpdate);
   inlineSubTitle.addEventListener('input', handleInlineStoreUpdate);
@@ -154,14 +162,18 @@ function handleAuthSubmit(e) {
     return;
   }
 
-  // STRICT VALIDATION: Check exact Email and Password match
-  const validEmail = posCredentials.email.trim().toLowerCase();
+  // VALIDATION: Check against saved custom credentials OR default demo credentials
   const inputEmail = email.toLowerCase();
+  const customSavedEmail = (posCredentials.email || '').trim().toLowerCase();
+  const defaultDemoEmail = DEFAULT_CREDENTIALS.email.toLowerCase();
 
-  if (inputEmail !== validEmail || password !== posCredentials.password) {
+  const isCustomMatch = inputEmail === customSavedEmail && password === posCredentials.password;
+  const isDefaultMatch = inputEmail === defaultDemoEmail && password === DEFAULT_CREDENTIALS.password;
+
+  if (!isCustomMatch && !isDefaultMatch) {
     showAuthError('❌ Invalid email or password. Access denied.');
     showToast('❌ Invalid email or password!');
-    return; // STRICT BLOCK
+    return; // BLOCK ACCESS IMMEDIATELY
   }
 
   // Create Authenticated Session
@@ -199,13 +211,14 @@ function handleLogout() {
 
 // Toast Helper
 function showToast(msg) {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerText = msg;
-  toastContainer.appendChild(toast);
+  const toast.className = 'toast';
+  const toastEl = document.createElement('div');
+  toastEl.className = 'toast';
+  toastEl.innerText = msg;
+  toastContainer.appendChild(toastEl);
 
   setTimeout(() => {
-    toast.remove();
+    toastEl.remove();
   }, 2500);
 }
 

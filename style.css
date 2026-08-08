@@ -118,32 +118,32 @@ body {
   background: #ffffff;
   border-radius: 20px;
   width: 100%;
-  max-width: 420px;
-  padding: 32px 28px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  max-width: 440px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
 }
 
 .auth-brand {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .auth-logo {
   font-size: 36px;
   background: var(--primary-light);
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  margin: 0 auto 12px;
+  margin: 0 auto 14px;
 }
 
 .auth-brand h2 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--primary);
   margin-bottom: 4px;
@@ -152,6 +152,50 @@ body {
 .auth-brand p {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.auth-form .form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+  height: 48px;
+  padding: 12px 16px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.auth-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3.5px rgba(27, 67, 50, 0.15);
+}
+
+.auth-form #btnSubmitAuth {
+  margin-top: 10px;
+  height: 50px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .demo-login-hint {
