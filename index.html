@@ -21,23 +21,27 @@
           <p>Sign in to your store billing counter</p>
         </div>
 
-        <!-- Inline Red Validation Error Alert Box -->
-        <div id="authErrorAlert" class="auth-error-alert hidden">
-          <span>❌ Invalid email or password. Access denied.</span>
+        <!-- Inline Red Error Alert Box -->
+        <div id="authErrorAlert" class="auth-error-alert" style="display: none;">
+          <span>❌ Invalid login details. Please check your credentials.</span>
         </div>
 
         <form id="authForm" class="auth-form">
           <div class="form-group">
-            <label for="authEmail">Email or Phone Number *</label>
-            <input type="text" id="authEmail" placeholder="e.g. owner@store.com" required autocomplete="username" />
+            <label for="authEmail">Email or Phone Number</label>
+            <input type="text" id="authEmail" placeholder="e.g. owner@store.com" autocomplete="username" />
           </div>
           <div class="form-group">
-            <label for="authPassword">Password *</label>
-            <input type="password" id="authPassword" placeholder="Enter password" required autocomplete="current-password" />
+            <label for="authPassword">Password</label>
+            <input type="password" id="authPassword" placeholder="Enter password" autocomplete="current-password" />
           </div>
 
           <button type="submit" class="btn btn-success btn-block btn-lg" id="btnSubmitAuth">
             🔓 Sign In to Billing Counter
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-block" id="btnQuickSkip" style="margin-top: 8px;">
+            ⚡ Direct POS Counter Access
           </button>
         </form>
 
@@ -48,7 +52,7 @@
     </div>
 
     <!-- Screen 2: Main POS Billing View (Visible when authenticated) -->
-    <div id="mainPosContent" class="main-pos-content hidden">
+    <div id="mainPosContent" class="main-pos-content" style="display: none;">
       <!-- Main Top Navbar -->
       <header class="navbar">
         <div class="brand">

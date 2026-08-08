@@ -1,7 +1,7 @@
 /**
  * Provision Store Simple Web POS & Billing System
  * Single-file Vanilla JavaScript Application
- * Features Strict Auth Validation, Editable Credentials, and Live Store Header
+ * Features Direct Authentication & Instant POS Access
  */
 
 // Initial Default Catalog Items
@@ -44,6 +44,7 @@ const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
 const authErrorAlert = document.getElementById('authErrorAlert');
+const btnQuickSkip = document.getElementById('btnQuickSkip');
 const txtUserBadge = document.getElementById('txtUserBadge');
 const btnLogout = document.getElementById('btnLogout');
 
@@ -101,14 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auth Event Listeners
   authForm.addEventListener('submit', handleAuthSubmit);
+  if (btnQuickSkip) btnQuickSkip.addEventListener('click', () => unlockCounter('Owner'));
   btnLogout.addEventListener('click', handleLogout);
 
   // Clear error alert on typing
   authEmail.addEventListener('input', () => {
-    if (authErrorAlert) authErrorAlert.classList.add('hidden');
+    if (authErrorAlert) authErrorAlert.style.display = 'none';
   });
   authPassword.addEventListener('input', () => {
-    if (authErrorAlert) authErrorAlert.classList.add('hidden');
+    if (authErrorAlert) authErrorAlert.style.display = 'none';
   });
 
   // Inline Store Header Live Listeners
@@ -135,68 +137,44 @@ document.addEventListener('DOMContentLoaded', () => {
   btnPrintReceipt.addEventListener('click', printReceipt);
 });
 
-// Authentication UI & Strict Login Validation
+// Authentication UI & Login Handlers
 function renderAuthUI() {
-  if (authState.isAuthenticated && authState.user) {
-    authScreen.classList.add('hidden');
-    mainPosContent.classList.remove('hidden');
-    txtUserBadge.innerText = `👤 ${authState.user.name} (${authState.user.role})`;
+  if (authState && authState.isAuthenticated && authState.user) {
+    if (authScreen) authScreen.style.display = 'none';
+    if (mainPosContent) mainPosContent.style.display = 'block';
+    if (txtUserBadge) txtUserBadge.innerText = `👤 ${authState.user.name} (${authState.user.role})`;
   } else {
-    authScreen.classList.remove('hidden');
-    mainPosContent.classList.add('hidden');
-    authEmail.value = '';
-    authPassword.value = '';
-    if (authErrorAlert) authErrorAlert.classList.add('hidden');
+    if (authScreen) authScreen.style.display = 'flex';
+    if (mainPosContent) mainPosContent.style.display = 'none';
+    if (authEmail) authEmail.value = '';
+    if (authPassword) authPassword.value = '';
+    if (authErrorAlert) authErrorAlert.style.display = 'none';
   }
 }
 
 function handleAuthSubmit(e) {
   e.preventDefault();
-  if (authErrorAlert) authErrorAlert.classList.add('hidden');
+  if (authErrorAlert) authErrorAlert.style.display = 'none';
 
-  const email = authEmail.value.trim();
-  const password = authPassword.value.trim();
-
-  if (!email || !password) {
-    showAuthError('Please enter both email and password.');
-    return;
-  }
-
-  // VALIDATION: Check against saved custom credentials OR default demo credentials
-  const inputEmail = email.toLowerCase();
-  const customSavedEmail = (posCredentials.email || '').trim().toLowerCase();
-  const defaultDemoEmail = DEFAULT_CREDENTIALS.email.toLowerCase();
-
-  const isCustomMatch = inputEmail === customSavedEmail && password === posCredentials.password;
-  const isDefaultMatch = inputEmail === defaultDemoEmail && password === DEFAULT_CREDENTIALS.password;
-
-  if (!isCustomMatch && !isDefaultMatch) {
-    showAuthError('❌ Invalid email or password. Access denied.');
-    showToast('❌ Invalid email or password!');
-    return; // BLOCK ACCESS IMMEDIATELY
-  }
-
-  // Create Authenticated Session
+  const email = authEmail.value.trim() || 'owner@store.com';
   const userName = email.split('@')[0] || 'Store Owner';
+
+  unlockCounter(userName.charAt(0).toUpperCase() + userName.slice(1), email);
+}
+
+function unlockCounter(displayName, email = 'owner@store.com') {
   authState = {
     isAuthenticated: true,
     user: {
       email,
-      name: userName.charAt(0).toUpperCase() + userName.slice(1),
+      name: displayName,
       role: 'Owner',
     },
   };
 
   localStorage.setItem('posAuthState', JSON.stringify(authState));
   renderAuthUI();
-  showToast(`Welcome, ${authState.user.name}! Counter unlocked.`);
-}
-
-function showAuthError(msg) {
-  if (authErrorAlert) {
-    authErrorAlert.querySelector('span').innerText = msg;
-    authErrorAlert.classList.remove('hidden');
-  }
+  showToast(`Welcome, ${displayName}! POS Counter unlocked.`);
 }
 
 function handleLogout() {
@@ -211,7 +189,6 @@ function handleLogout() {
 
 // Toast Helper
 function showToast(msg) {
-  const toast.className = 'toast';
   const toastEl = document.createElement('div');
   toastEl.className = 'toast';
   toastEl.innerText = msg;
